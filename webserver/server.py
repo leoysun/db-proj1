@@ -31,7 +31,6 @@ app = Flask(__name__, template_folder=tmpl_dir)
 #
 DATABASEURI = "postgresql://jld2251:juliaduckey@104.196.222.236/proj1part2"
 
-
 #
 # This line creates a database engine that knows how to connect to the URI above.
 #
@@ -45,14 +44,14 @@ conn = engine.connect()
 
 # The string needs to be wrapped around text()
 
-conn.execute(text("""CREATE TABLE IF NOT EXISTS test (
-  id serial,
-  name text
-);"""))
-conn.execute(text("""INSERT INTO test(name) VALUES ('grace hopper'), ('alan turing'), ('ada lovelace');"""))
+#conn.execute(text("""CREATE TABLE IF NOT EXISTS test (
+#  id serial,
+#  name text
+#);"""))
+#conn.execute(text("""INSERT INTO test(name) VALUES ('grace hopper'), ('alan turing'), ('ada lovelace');"""))
 
 # To make the queries run, we need to add this commit line
-conn.commit() 
+#conn.commit() 
 
 @app.before_request
 def before_request():
@@ -81,7 +80,6 @@ def teardown_request(exception):
   except Exception as e:
     pass
 
-
 #
 # @app.route is a decorator around index() that means:
 #   run index() whenever the user tries to access the "/" path using a GET request
@@ -109,28 +107,28 @@ def index():
   """
 
   # DEBUG: this is debugging code to see what request looks like
-  print(request.args)
+#  print(request.args)
 
   #
   # example of a database query 
   #
-  cursor = g.conn.execute(text("SELECT name FROM test"))
-  g.conn.commit()
+  #cursor = g.conn.execute(text("SELECT name FROM test"))
+  #g.conn.commit()
 
   # 2 ways to get results
 
   # Method 1 - Indexing result by column number
-  names = []
-  for result in cursor:
-    names.append(result[0])  
+  #names = []
+  #for result in cursor:
+  #  names.append(result[0])  
 
   # Method 2 - Indexing result by column name
-  # names = []
-  # results = cursor.mappings().all()
-  # for result in results:
-  #   names.append(result["name"])
+  #names = []
+  #results = cursor.mappings().all() 
+  #for result in results:
+  #  names.append(result["name"])
 
-  cursor.close()
+  #cursor.close()
 
   #
   # Flask uses Jinja templates, which is an extension to HTML where you can
@@ -145,27 +143,27 @@ def index():
   # accessible as a variable in index.html:
   #
   #     # will print: [u'grace hopper', u'alan turing', u'ada lovelace']
-  #     <div>{{data}}</div>
-  #
-  #     # creates a <div> tag for each element in data
-  #     # will print:
-  #     #
-  #     #   <div>grace hopper</div>
-  #     #   <div>alan turing</div>
-  #     #   <div>ada lovelace</div>
-  #     #
-  #     {% for n in data %}
-  #     <div>{{n}}</div>
-  #     {% endfor %}
-  #
-  context = dict(data = names)
-
-
+  
+  #context = dict(data = names)
+  
+  #<div>{{data}}</div>
+  
+       # creates a <div> tag for each element in data
+       # will print:
+       #
+       #   <div>grace hopper</div>
+       #   <div>alan turing</div>
+       #   <div>ada lovelace</div>
+       #
+  #{% for n in data %}
+  #    <div>{{n}}</div>
+  #{% endfor %}
+  
   #
   # render_template looks in the templates/ folder for files.
   # for example, the below file reads template/index.html
   #
-  return render_template("index.html", **context)
+  return render_template("index.html") #, **context)
 
 #
 # This is an example of a different path.  You can see it at:
@@ -179,22 +177,36 @@ def index():
 def another():
   return render_template("another.html")
 
-
 # Example of adding new data to the database
 @app.route('/add', methods=['POST'])
 def add(): 
-  name = request.form['name']
-  params_dict = {"name":name}
-  g.conn.execute(text('INSERT INTO test(name) VALUES (:name)'), params_dict)
+  rating = request.form['rating']
+  params_dict = {"rating":rating, "user_id":g.user_id, "dhall_name":g.dhall_name} # ADD FORMS TO ADJUST THE DHALLNAME AND USERID
+  g.conn.execute(text('INSERT INTO rates(rating, user_id, dhall_name) VALUES (:rating, :user_id, :dhall_name)'), params_dict)
   g.conn.commit()
   return redirect('/')
 
+@app.route('/id', methods=['POST'])
+def set_userid():
+  g.user_id = request.form.get('user_id')  # Retrieve the value of 'user_id' from the form
+  return redirect('/')
+
+@app.route('/showDhalls')
+def showTables():
+  cursor = g.conn.execute(text("SELECT * FROM dining_halls"))
+  g.conn.commit()
+  dhalls = []
+  results = cursor.mappings().all() 
+  for result in results:
+    dhalls.append(result)
+  
+  cursor.close()
+  return render_template("dhalls.html", data=dhalls)
 
 @app.route('/login')
 def login():
     abort(401)
     this_is_never_executed()
-
 
 if __name__ == "__main__":
   import click
@@ -221,4 +233,6 @@ if __name__ == "__main__":
     print("running on %s:%d" % (HOST, PORT))
     app.run(host=HOST, port=PORT, debug=debug, threaded=threaded)
 
-  run()
+    
+  app.run(debug=True)
+
