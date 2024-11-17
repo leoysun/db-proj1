@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+
+  <style>
+    body{ 
+      font-size: 15pt;
+      font-family: arial;
+    }
+  </style>
+
+  <head>
+    <title>DineDB</title>
+    <link rel="stylesheet" type="text/css" href="../../static/styles.css">
+  </head>
+
+  <body>
+    <h1>Welcome to our website!</h1>
+    <h1>Some famous Computer Scientists</h1>
+    <div>{{data}}</div>
+
+    <form id="nameForm" action="/name" method="POST">
+      <label for ="fname">Name:</label>
+      <input type="text" id="fname" name="fname">
+
+      <button class="submitButton" type="submit" value="Submit">Submit</button>
+
+    </form>
+
+    <script>
+      const form = document.getElementById("nameForm").onsubmit = function() {
+      form.addEventListener('submit', function(event) {
+        event.preventDefault();
+        const name = document.getElementById("fname").value;
+        console.log(`Thank you, ${name.trim()}!`);
+      })
+      }
+    
+    </script>
+
+    <div>
+      {% for n in data %}
+      <div>{{n}}</div>
+      {% endfor %}
+    </div>
+
+    <p><a href="another">Go to the other page</a></p>
+
+    <form method="POST" action="/add">
+    <p>Name of new computer scientist: <input type="text" name="name"> <input type="submit" value="Add"></p>
+    </form>
+
+  </body>
+
+
+</html>
