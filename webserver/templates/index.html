@@ -1,75 +1,68 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Campus Dining Hall Ratings</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100">
+    <nav class="bg-blue-600 p-4 shadow-lg">
+        <div class="container mx-auto">
+            <h1 class="text-white text-2xl font-bold">Campus Dining Halls</h1>
+        </div>
+    </nav>
 
-  <style>
-    body{ 
-      font-size: 15pt;
-      font-family: arial;
-    }
-  </style>
+    <main class="container mx-auto p-4 mt-8">
+        <div class="grid md:grid-cols-2 gap-8">
+            <!-- User Information Section -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <h2 class="text-xl font-semibold mb-4">User Information</h2>
+                <form action="/id" method="POST" class="mb-4">
+                    <div class="mb-4">
+                        <label for="user_id" class="block text-sm font-medium text-gray-700">Your User ID</label>
+                        <input type="text" id="user_id" name="user_id" required 
+                               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    </div>
+                    <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+                        Set User ID
+                    </button>
+                </form>
+            </div>
 
-  <head>
-    <title>DineDB</title>
-    <link rel="stylesheet" type="text/css" href="../../static/styles.css">
-  </head>
+            <!-- Rating Section -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <h2 class="text-xl font-semibold mb-4">Rate a Dining Hall</h2>
+                <form action="/dhall_name" method="POST" class="mb-4">
+                    <div class="mb-4">
+                        <label for="dhall_name" class="block text-sm font-medium text-gray-700">Select Dining Hall</label>
+                        <input type="text" id="dhall_name" name="dhall_name" required 
+                               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    </div>
+                    <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+                        Select Dining Hall
+                    </button>
+                </form>
 
-  <body>
-    <h1>Welcome to our website!</h1>
-    <h1>Some famous Computer Scientists</h1>
-    <div>{{data}}</div>
+                <form action="/rate" method="POST">
+                    <div class="mb-4">
+                        <label for="rating" class="block text-sm font-medium text-gray-700">Rating (1-5)</label>
+                        <input type="number" id="rating" name="rating" min="1" max="5" required 
+                               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    </div>
+                    <button type="submit" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">
+                        Submit Rating
+                    </button>
+                </form>
+            </div>
+        </div>
 
-    <form id="nameForm" action="/name" method="POST">
-      <label for ="fname">Name:</label>
-      <input type="text" id="fname" name="fname">
-      <button class="submitButton" type="submit" value="Submit">Submit</button>
-
-    </form>
-
-    <form id="idForm" action="/id" method="POST">
-      <label for="user_id">Enter a User ID:</label>
-      <input type="text" id="user_id" name="user_id">
-      <button class="submitButton" type="submit" value="Submit">Submit</button>
-    </form>
-
-    <form id="dhallForm" method="POST" action="/dhall_name">
-      <label for="dhall_name">Enter a Dining Hall Name:</label>
-      <input type="text" id="dhall_name" name="dhall_name">
-      <button class="submitButton" type="submit" value="Submit">Submit</button>
-    </form>
-
-    <form id="ratingForm" action="/add" method="POST">
-      <label for="rating">Rating for this dining hall: </label>
-      <input type="text" id="rating" name="rating"> 
-      <button class="submitButton" type="submit" value="Submit">Submit</button>
-    </form>
-
-    
-
-
-    <script>
-      const form = document.getElementById("nameForm").onsubmit = function() {
-      form.addEventListener('submit', function(event) {
-        event.preventDefault();
-        const name = document.getElementById("fname").value;
-        console.log(`Thank you, ${name.trim()}!`);
-      })
-      }
-    
-    </script>
-
-    <div>
-      {% for n in data %}
-      <div>{{n}}</div>
-      {% endfor %}
-    </div>
-
-    <p><a href="another">Go to the other page</a></p>
-
-    <p><a href="showDhalls">Show Dining Halls</a></p>
-
-    
-
-  </body>
-
-
+        <!-- View All Dining Halls Button -->
+        <div class="mt-8 text-center">
+            <a href="/showDhalls" class="inline-block bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition-colors">
+                View All Dining Halls
+            </a>
+        </div>
+    </main>
+</body>
 </html>

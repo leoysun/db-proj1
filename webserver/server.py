@@ -17,7 +17,6 @@ from flask import Flask, request, render_template, g, redirect, Response, abort
 tmpl_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'templates')
 app = Flask(__name__, template_folder=tmpl_dir)
 
-
 #
 # The following is a dummy URI that does not connect to a valid database. You will need to modify it to connect to your Part 2 database in order to use the data.
 #
@@ -178,7 +177,7 @@ def another():
   return render_template("another.html")
 
 # Example of adding new data to the database
-@app.route('/add', methods=['POST'])
+@app.route('/add', methods=['ADD','POST'])
 def add(): 
   rating = request.form['rating']
   params_dict = {"rating":rating, "user_id":g.user_id, "dhall_name":g.dhall_name} # ADD FORMS TO ADJUST THE DHALLNAME AND USERID
@@ -189,19 +188,34 @@ def add():
 @app.route('/id', methods=['POST'])
 def set_userid():
   g.user_id = request.form.get('user_id')  # Retrieve the value of 'user_id' from the form
+  print(g.user_id)
   return redirect('/')
+
+@app.route('/dhall_name', methods=['POST'])
+def set_dhall_name():
+  g.dhall_name = request.form.get('dhall_name')  # Retrieve the value of 'dhall_name' from the form
+  print(g.dhall_name)
+  return redirect('/')
+
+@app.route('/rate', methods=['POST'])
+def set_rating():
+  g.rating = request.form.get('rating')  # Retrieve the value of 'rating' from the form
+  print(g.rating)
+  return redirect('/add')
 
 @app.route('/showDhalls')
 def showTables():
   cursor = g.conn.execute(text("SELECT * FROM dining_halls"))
   g.conn.commit()
   dhalls = []
-  results = cursor.mappings().all() 
+  results = cursor.mappings().all()
   for result in results:
     dhalls.append(result)
-  
   cursor.close()
-  return render_template("dhalls.html", data=dhalls)
+
+  context = dict(data=dhalls)
+  return render_template("dhalls.html", **context)
+
 
 @app.route('/login')
 def login():
