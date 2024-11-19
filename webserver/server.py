@@ -13,6 +13,8 @@ import os
 from sqlalchemy import *
 from sqlalchemy.pool import NullPool
 from flask import Flask, request, render_template, g, redirect, Response, abort
+from datetime import datetime
+import uuid
 
 tmpl_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'templates')
 app = Flask(__name__, template_folder=tmpl_dir)
@@ -216,6 +218,77 @@ def showTables():
   context = dict(data=dhalls)
   return render_template("dhalls.html", **context)
 
+@app.route('/reviews')
+def showReviews():
+  cursor = g.conn.execute(text("SELECT dhall_name FROM dining_halls ORDER BY dhall_name"))
+  g.conn.commit()
+  dhalls = [row[0] for row in cursor]
+  cursor.close()
+    
+  # Get all reviews with dining hall info and edit status
+  query = """
+    SELECT pr.*, r.rating, r.dhall_name,
+           CASE WHEN e.rid IS NOT NULL THEN TRUE ELSE FALSE END as edited
+    FROM Posts_Reviews pr
+    JOIN rates r ON pr.user_id = r.user_id 
+    LEFT JOIN Edits e ON pr.rid = e.rid
+    ORDER BY pr.datetime DESC
+    """
+    
+  cursor = g.conn.execute(text(query))
+  g.conn.commit()
+  reviews = cursor.mappings().all()
+  cursor.close()
+  context = dict(dhalls=dhalls, reviews=reviews)
+  return render_template('dhalls.html', **context)
+
+
+@app.route('/submitReview', methods=['POST'])
+def submitReview():
+    dhall_name = request.form.get('dhall_name')
+    rating = request.form.get('rating')
+    description = request.form.get('description')
+    user_id = request.form.get('user_id')  # Get user ID from form input
+
+    # Ensure user_id is not empty
+    if not user_id:
+        return "User ID is required to submit a review.", 400
+        
+    rid = str(uuid.uuid4())[:20]
+    current_time = datetime.now()
+    
+    # Insert the review and rating
+    try:
+        # Insert into Posts_Reviews
+        review_params = {
+            'user_id': request.form['user_id'],
+            'datetime': current_time,
+            'rid': rid,
+            'description': request.form['description']
+        }
+        g.conn.execute(text("""
+            INSERT INTO Posts_Reviews (user_id, datetime, rid, description)
+            VALUES (:user_id, :datetime, :rid, :description)
+        """), review_params)
+        
+        # Insert into rates
+        rating_params = {
+            'user_id': request.form['user_id'],
+            'dhall_name': request.form['dhall_name'],
+            'rating': request.form['rating']
+        }
+        g.conn.execute(text("""
+            INSERT INTO rates (rating, user_id, dhall_name)
+            VALUES (:rating, :user_id, :dhall_name)
+        """), rating_params)
+        
+        g.conn.commit()
+        return redirect('/reviews')
+        
+    except Exception as e:
+        print(f"Error submitting review: {e}")
+        g.conn.rollback()
+        return "Error submitting review", 500
 
 @app.route('/login')
 def login():
