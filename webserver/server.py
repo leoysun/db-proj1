@@ -246,7 +246,7 @@ def showReviews():
   #dhalls = [row[0] for row in cursor]
   #cursor.close()
     
-  # Get all reviews with dining hall info
+  # Get SOME reviews with dining hall info
   query = """
     SELECT DISTINCT pr.*, j.rating, e.dhall_name
     FROM posts_reviews pr INNER JOIN evaluates e
