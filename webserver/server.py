@@ -216,7 +216,14 @@ def set_rating():
 
 @app.route('/showDhalls')
 def showTables():
-  cursor = g.conn.execute(text("SELECT * FROM dining_halls"))
+  cursor = g.conn.execute(text("""
+                               SELECT dh.dhall_name, dh.address, dh.capacity, dh.hours, hi.item_name, hi.dietary_info, hi.ingredients
+                               FROM dining_halls dh INNER JOIN has_item hi
+                               ON dh.dhall_name = hi.dhall_name
+                               """))
+  #### Access in dhalls.html using dhalls['item_name'], dhalls['dietary_info'], dhalls['ingredients'], etc. Maybe use AI for frontend fitting info in
+  #### NOTE: above query is still flawed as it doesn't include the dates and mealtime that the items are presented during. 
+  #### This is in the table "Menu_is_from" I believe. But that requires another join which we can figure out later if we want.
   g.conn.commit()
   dhalls = []
   results = cursor.mappings().all()
@@ -262,7 +269,7 @@ def showReviews():
   context = dict(reviews=reviews)
   return render_template('dhalls.html', **context)
 
-@app.route('/submitReview', methods=['POST'])
+@app.route('/submitReview', methods=['GET', 'POST'])
 def submitReview():
     dhall_name = request.form.get('dhall_name')
     rating = request.form.get('rating')
