@@ -189,8 +189,14 @@ def add():
 
 @app.route('/id', methods=['POST'])
 def set_userid():
-  g.user_id = request.form.get('user_id')  # Retrieve the value of 'user_id' from the form
-  print(g.user_id)
+  try:
+    g.user_id = request.form.get('user_id')  # Retrieve the value of 'user_id' from the form
+    g.conn.execute(text('INSERT INTO users(user_id) VALUES (:user_id)'), {'user_id': g.user_id})
+    g.conn.commit()
+  except Exception as e:
+    
+    redirect('/')
+    Response("Your User ID is already in use.") # NOTE: THIS IS NOT WORKING. BUT IT'S OKAY FOR NOW
   return redirect('/')
 
 @app.route('/dhall_name', methods=['POST'])
@@ -219,37 +225,33 @@ def showTables():
   return render_template("dhalls.html", **context)
 
 #currently in progress
-@app.route('/search')
-def search():
-  g.search = request.form.get('search') # MAKE THIS MORE IN DEPTH. WANT TO SEARCH FOR WHATEVER THE SEARCH FORM GIVES. FROM ALL DHALL INFO.
-  cursor = g.conn.execute(text("SELECT"))
-  return render_template("search.html, ")
+#@app.route('/search')
+#def search():
+#  g.search = request.form.get('search') # MAKE THIS MORE IN DEPTH. WANT TO SEARCH FOR WHATEVER THE SEARCH FORM GIVES. FROM ALL DHALL INFO.
+#  cursor = g.conn.execute(text("SELECT"))
+#  return render_template("search.html, ")
 
 #TODO: get all food info on dhall page
 @app.route('/reviews')
 def showReviews():
-  cursor = g.conn.execute(text("SELECT dhall_name FROM dining_halls ORDER BY dhall_name"))
+  cursor = g.conn.execute(text("SELECT dhall_name FROM dining_halls"))
   g.conn.commit()
   dhalls = [row[0] for row in cursor]
   cursor.close()
     
-  # Get all reviews with dining hall info and edit status
+  # Get all reviews with dining hall info
   query = """
-    SELECT pr.*, r.rating, r.dhall_name,
-           CASE WHEN e.rid IS NOT NULL THEN TRUE ELSE FALSE END as edited
+    SELECT pr.*, r.rating, r.dhall_name
     FROM Posts_Reviews pr
-    JOIN rates r ON pr.user_id = r.user_id 
-    LEFT JOIN Edits e ON pr.rid = e.rid
-    ORDER BY pr.datetime DESC
+    JOIN rates r ON pr.user_id = r.user_id
     """
-    
+  
   cursor = g.conn.execute(text(query))
   g.conn.commit()
   reviews = cursor.mappings().all()
   cursor.close()
   context = dict(dhalls=dhalls, reviews=reviews)
   return render_template('dhalls.html', **context)
-
 
 @app.route('/submitReview', methods=['POST'])
 def submitReview():
@@ -290,13 +292,24 @@ def submitReview():
             VALUES (:rating, :user_id, :dhall_name)
         """), rating_params)
         
+        # Insert into evaluates
+        evaluates_params = {
+            'dhall_name': request.form['dhall_name'],
+            'mealtime': request.form['mealtime'],
+            'rid': rid
+        }
+        g.conn.execute(text("""
+            INSERT INTO evaluates (dhall_name, mealtime, rid)
+            VALUES (:dhall_name, :mealtime, :rid)
+        """), evaluates_params)
         g.conn.commit()
+
         return redirect('/reviews')
         
     except Exception as e:
         print(f"Error submitting review: {e}")
         g.conn.rollback()
-        return "Error submitting review", 500
+        return f"Error submitting review: {e}", 500
 
 @app.route('/login')
 def login():
