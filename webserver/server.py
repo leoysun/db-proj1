@@ -115,18 +115,36 @@ def showTables():
     dhalls = [dict(row) for row in cursor.mappings()]
     cursor.close()
 
-    # Then, get items for each dining hall
+    # Then, get items for each dining hall by station
     for dhall in dhalls:
-    # Fetch items for this specific dining hall
+        # Fetch items for this specific dining hall, grouped by station
         items_cursor = g.conn.execute(text("""
-            SELECT item_name, dietary_info, ingredients, station, date
+            SELECT station, 
+                   item_name,
+                   dietary_info
             FROM has_item
             WHERE dhall_name = :dhall_name
+              AND station != ''
         """), {"dhall_name": dhall['dhall_name']})
         
-        # Convert RowMapping objects to dictionaries for mutability
-        dhall['items'] = [dict(item) for item in items_cursor.mappings()]
+        # Group items by station
+        stations = {}
+        for item in items_cursor.mappings():
+            if item['station'] not in stations:
+                stations[item['station']] = []
+            stations[item['station']].append({
+                'name': item['item_name'],
+                'dietary_info': item['dietary_info'] or 'No info'
+            })
+        
+        dhall['stations'] = [
+            {
+                'station': station, 
+                'items': items
+            } for station, items in stations.items()
+        ]
         items_cursor.close()
+
 
 
     # Fetch reviews
