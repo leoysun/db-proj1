@@ -216,6 +216,14 @@ def showTables():
   context = dict(data=dhalls)
   return render_template("dhalls.html", **context)
 
+#currently in progress
+@app.route('/search')
+def search():
+  g.search = request.form.get('search') # MAKE THIS MORE IN DEPTH. WANT TO SEARCH FOR WHATEVER THE SEARCH FORM GIVES. FROM ALL DHALL INFO.
+  cursor = g.conn.execute(text("SELECT"))
+  return render_template("search.html, ")
+
+#TODO: get all food info on dhall page
 
 @app.route('/login')
 def login():
