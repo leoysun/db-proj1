@@ -3,66 +3,255 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Campus Dining Hall Ratings</title>
+    <title>Columbia Dining Halls</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
 </head>
-<body class="bg-gray-100">
-    <nav class="bg-blue-600 p-4 shadow-lg">
-        <div class="container mx-auto">
-            <h1 class="text-white text-2xl font-bold">Campus Dining Halls</h1>
+<body class="bg-gray-50">
+    <nav class="bg-blue-800 p-4 shadow-lg">
+        <div class="container mx-auto flex justify-between items-center">
+            <div>
+                <h1 class="text-white text-2xl font-bold">Columbia Dining Halls</h1>
+                <p class="text-blue-100 text-sm">Find your perfect dining spot on campus</p>
+            </div>
+            <a href="/" class="text-white hover:text-blue-200 font-medium">Back to Home</a>
         </div>
     </nav>
 
     <main class="container mx-auto p-4 mt-8">
-        <div class="grid md:grid-cols-2 gap-8">
-            <!-- User Information Section -->
-            <div class="bg-white rounded-lg shadow p-6">
-                <h2 class="text-xl font-semibold mb-4">User Information</h2>
-                <form action="/id" method="POST" class="mb-4">
-                    <div class="mb-4">
-                        <label for="user_id" class="block text-sm font-medium text-gray-700">Your User ID</label>
-                        <input type="text" id="user_id" name="user_id" required 
-                               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+        <div class="space-y-6">
+            {% for dhall in data %}
+            <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <!-- Name and Basic Info Section -->
+                    <div class="md:col-span-1 bg-gray-50 p-6">
+                        <h2 class="text-xl font-bold text-gray-900 mb-2">{{ dhall['dhall_name'] }}</h2>
+                        <div class="space-y-3">
+                            <div>
+                                <p class="text-sm font-medium text-gray-600">Hours</p>
+                                <p class="text-sm text-gray-800 whitespace-pre-line">{{ dhall['hours'] }}</p>
+                            </div>
+                            <div>
+                                <p class="text-sm font-medium text-gray-600">Location</p>
+                                <p class="text-sm text-gray-800">{{ dhall['address'] }}</p>
+                            </div>
+                            <div>
+                                <p class="text-sm font-medium text-gray-600">Capacity</p>
+                                <p class="text-sm text-gray-800">
+                                    {% if dhall['capacity'] > 0 %}
+                                        {{ dhall['capacity'] }} percent
+                                    {% else %}
+                                        Capacity not specified
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
                     </div>
-                    <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
-                        Set User ID
-                    </button>
-                </form>
-            </div>
 
-            <!-- Rating Section -->
-            <div class="bg-white rounded-lg shadow p-6">
-                <h2 class="text-xl font-semibold mb-4">Rate a Dining Hall</h2>
-                <form action="/dhall_name" method="POST" class="mb-4">
-                    <div class="mb-4">
-                        <label for="dhall_name" class="block text-sm font-medium text-gray-700">Select Dining Hall</label>
-                        <input type="text" id="dhall_name" name="dhall_name" required 
-                               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                    </div>
-                    <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
-                        Select Dining Hall
-                    </button>
-                </form>
+                    <!-- Stations Section -->
+                    <div class="md:col-span-3 p-6">
+                        <div class="mb-4">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-3">Available Stations</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                {% if dhall['dhall_name'] == "John Jay Dining Hall" %}
+                                    <div class="bg-gray-50 rounded p-3">
+                                        <h4 class="font-medium text-gray-900">Main Line</h4>
+                                        <p class="text-sm text-gray-600">Hot entrees and daily specials</p>
+                                    </div>
+                                    <div class="bg-gray-50 rounded p-3">
+                                        <h4 class="font-medium text-gray-900">Salad Bar</h4>
+                                        <p class="text-sm text-gray-600">Fresh vegetables and toppings</p>
+                                    </div>
+                                    <div class="bg-gray-50 rounded p-3">
+                                        <h4 class="font-medium text-gray-900">Grill</h4>
+                                        <p class="text-sm text-gray-600">Made-to-order grilled items</p>
+                                    </div>
+                                {% elif dhall['dhall_name'] == "Ferris Booth Commons" %}
+                                    <div class="bg-gray-50 rounded p-3">
+                                        <h4 class="font-medium text-gray-900">International Station</h4>
+                                        <p class="text-sm text-gray-600">Global cuisine options</p>
+                                    </div>
+                                    <div class="bg-gray-50 rounded p-3">
+                                        <h4 class="font-medium text-gray-900">Pizza & Pasta</h4>
+                                        <p class="text-sm text-gray-600">Fresh-made Italian dishes</p>
+                                    </div>
+                                    <div class="bg-gray-50 rounded p-3">
+                                        <h4 class="font-medium text-gray-900">Deli</h4>
+                                        <p class="text-sm text-gray-600">Custom sandwiches and wraps</p>
+                                    </div>
+                                {% elif dhall['dhall_name'] == "JJ's Place" %}
+                                    <div class="bg-gray-50 rounded p-3">
+                                        <h4 class="font-medium text-gray-900">Grill Station</h4>
+                                        <p class="text-sm text-gray-600">Burgers and hot sandwiches</p>
+                                    </div>
+                                    <div class="bg-gray-50 rounded p-3">
+                                        <h4 class="font-medium text-gray-900">Mozzarella Sticks</h4>
+                                        <p class="text-sm text-gray-600">Late night favorite</p>
+                                    </div>
+                                    <div class="bg-gray-50 rounded p-3">
+                                        <h4 class="font-medium text-gray-900">Milkshakes</h4>
+                                        <p class="text-sm text-gray-600">Various flavors available</p>
+                                    </div>
+                                {% else %}
+                                    <div class="bg-gray-50 rounded p-3">
+                                        <p class="text-sm text-gray-600">Station information not available</p>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
 
-                <form action="/rate" method="POST">
-                    <div class="mb-4">
-                        <label for="rating" class="block text-sm font-medium text-gray-700">Rating (1-10)</label>
-                        <input type="number" id="rating" name="rating" min="1" max="10" required 
-                               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                        <!-- Status and Additional Info -->
+                        <div class="flex items-center justify-between mt-4">
+                            <div class="flex items-center space-x-2">
+                                <span class="inline-block w-2 h-2 rounded-full bg-green-500"></span>
+                                <span class="text-sm text-gray-600">
+                                    {% if "Closed" in dhall['hours'] %}
+                                        Currently Closed
+                                    {% else %}
+                                        Open Now
+                                    {% endif %}
+                                </span>
+                            </div>
+                            <button class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm">
+                                View Menu
+                            </button>
+                        </div>
                     </div>
-                    <button type="submit" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">
-                        Submit Rating
-                    </button>
-                </form>
+                </div>
             </div>
+            {% endfor %}
+
+<!-- Review Form Section -->
+<div class="bg-white rounded-lg shadow p-6">
+    <div class="flex justify-between items-center mb-4">
+        <h2 class="text-xl font-bold">Write a Review</h2>
+        <a href="/reviews" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition-colors">
+            See All Reviews
+        </a>
+    </div>
+    <!-- Fixed the form to exactly match the server expectations -->
+    <form action="/submitReview" method="POST" class="space-y-4">
+        <!-- User ID field -->
+        <div>
+            <label for="user_id" class="block text-gray-700 mb-2">Your User ID</label>
+            <input 
+                type="text" 
+                id="user_id" 
+                name="user_id" 
+                class="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
+                required
+            >
+        </div>
+        
+        <!-- Dining Hall Selection -->
+        <div>
+            <label for="dhall_name" class="block text-gray-700 mb-2">Dining Hall</label>
+            <select 
+                id="dhall_name" 
+                name="dhall_name" 
+                class="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
+                required
+            >
+                {% for dhall in data %}
+                    <option value="{{ dhall['dhall_name'] }}">{{ dhall['dhall_name'] }}</option>
+                {% endfor %}
+            </select>
         </div>
 
-        <!-- View All Dining Halls Button -->
-        <div class="mt-8 text-center">
-            <a href="/showDhalls" class="inline-block bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition-colors">
-                View All Dining Halls
-            </a>
+        <!-- Mealtime Selection-->
+        <div>
+            <label for="mealtime" class="block text-gray-700 mb-2">Mealtime</label>
+            <select 
+                id="mealtime" 
+                name="mealtime" 
+                class="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
+                required
+            >
+                <option value="Breakfast">Breakfast</option>
+                <option value="Lunch">Lunch</option>
+                <option value="Dinner">Dinner</option>
+            </select>
         </div>
-    </main>
+        
+        <!-- Rating Selection -->
+        <div>
+            <label for="rating" class="block text-gray-700 mb-2">Rating</label>
+            <select 
+                id="rating" 
+                name="rating" 
+                class="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
+                required
+            >
+                <option value="10">10 - Excellent</option>
+                <option value="9">9</option>
+                <option value="8">8</option>
+                <option value="7">7</option>
+                <option value="6">6</option>
+                <option value="5">5</option>
+                <option value="4">4</option>
+                <option value="3">3</option>
+                <option value="2">2</option>
+                <option value="1">1 - Poor</option>
+            </select>
+        </div>
+        
+        <!-- Review Description -->
+        <div>
+            <label for="description" class="block text-gray-700 mb-2">Review</label>
+            <textarea 
+                id="description" 
+                name="description" 
+                rows="4" 
+                class="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
+                maxlength="300" 
+                required
+            ></textarea>
+            <p class="text-sm text-gray-500 mt-1">Maximum 300 characters</p>
+        </div>
+        
+        <!-- Submit Button -->
+        <button 
+            type="submit" 
+            class="w-full bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+        >
+            Submit Review
+        </button>
+    </form>
+</div>
+
+<!-- Reviews Display Section -->
+<div class="bg-white rounded-lg shadow-md p-6 mt-6">
+    <h2 class="text-xl font-bold text-gray-900 mb-4">Recent Reviews</h2>
+    {% if reviews %}
+        {% for review in reviews %}
+        <div class="mb-6 border-b pb-4 last:border-b-0">
+            <div class="flex justify-between items-center">
+                <h3 class="text-lg font-semibold text-gray-900">{{ review['dhall_name'] }}</h3>
+                <p class="text-sm text-gray-500">{{ review['datetime'].strftime("%B %d, %Y %H:%M") }}</p>
+            </div>
+            <div class="flex items-center mt-2">
+                <div class="flex">
+                    {% for i in range(review['rating']|int) %}
+                        <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                        </svg>
+                    {% endfor %}
+                </div>
+                <span class="ml-2 text-sm text-gray-600">({{ review['rating'] }}/5)</span>
+            </div>
+            <p class="text-sm text-gray-700 mt-2">{{ review['description'] }}</p>
+            <p class="text-sm text-gray-500 mt-2 italic">Review by User ID: {{ review['user_id'] }}</p>
+        </div>
+        {% endfor %}
+    {% else %}
+        <p class="text-gray-600 italic">No reviews yet. Be the first to write one!</p>
+    {% endif %}
+</div>
+
+    <footer class="bg-gray-100 mt-12 py-6">
+        <div class="container mx-auto px-4 text-center text-gray-600 text-sm">
+            <p>Hours and availability may vary during holidays and special events.</p>
+            <p class="mt-2">For the most up-to-date information, please check the Columbia Dining website.</p>
+        </div>
+    </footer>
 </body>
 </html>

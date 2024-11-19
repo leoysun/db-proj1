@@ -1,0 +1,324 @@
+SQL schema
+CREATE TABLE Users
+(
+user_id VARCHAR(11),
+username VARCHAR(20),
+UNIQUE (username),
+PRIMARY KEY(user_id)
+)
+
+INSERT INTO Users (user_id, username) VALUES ('lys2121', 'leosun05'), ('jld2251', 'jding713'), ('kd2945', 'ktdlp'), ('kt2965', 'kylet05'), ('hhc2137', 'harrisc05'), ('swh2132', 'huangs05'), ('aw3631', 'awuhoo'), ('sls2299', 'stevensun'), ('wm2505', 'wesleymaa'), ('ms6858', 'meeplaya')
+;
+
+CREATE TABLE Admin
+(
+user_id VARCHAR(11),
+password VARCHAR(20), 
+PRIMARY KEY (user_id),
+FOREIGN KEY (user_id) REFERENCES Users
+ON DELETE CASCADE
+)
+INSERT INTO Admin(user_id, password) VALUES ('lys2121', 'AdminPassword01'), ('jld2251', 'AdminPassword01')
+;
+
+CREATE TABLE Dining_Halls 
+(
+dhall_name VARCHAR(50),
+address VARCHAR(100),
+capacity REAL CHECK (capacity >= 0),
+hours VARCHAR(200),
+PRIMARY KEY (dhall_name)
+)
+
+INSERT INTO Dining_Halls(dhall_name, address, capacity, hours) VALUES ('John Jay Dining Hall', '519 W 114th St, New York, NY 10027', 58, 'Sunday to Thursday, 9:30AM-9PM'), ('JJ''s Place', 'John Jay Hall Lower Level, 511 W 114th St, New York, NY 10027', 87.5, 'Daily 12PM-10AM'), ('Hewitt', '3009 Broadway, New York, NY 10027', 77, 'Mon-Thurs: 9AM-11AM, 11:30AM-12AM. Fri: 9AM-3PM. Sat: Closed. Sun: 12PM-8PM'), ('Diana', '3009 Broadway, New York, NY 10027', 93, 'Mon-Thurs: 9AM-11AM, 11:30AM-12AM. Fri: 9AM-3PM. Sat: Closed. Sun: 12PM-8PM'), ('Chef Mike''s Sub Shop', '3022 Broadway, New York, NY 10027', 40, '3022 Broadway, New sYork, NY 10027'), ('The Fac Shack', 'By John Jay gates to W. 114th Street', 0, 'Monday - Thursday, 11AM - 2PM. Thursday - Saturday, 7PM - 11PM'), ('Ferris Booth Commons', 'Alfred Lerner Hall, 2920 Broadway, New York, NY 10027', 150, 'Mon-Fri, 7:30AM-8PM. Sat, 9AM-8PM. Sun, 10AM-2PM, 4PM-8PM'), ('Faculty House', '64 Morningside Dr, New York, NY 10027', 0, 'Mon-Wed, 11AM-2:30PM'), ('Chef Don''s Pizza Pi', 'Mudd Building, 500 W 120th St, New York, NY 10027', 0, 'Mon-Fri, 8AM-6PM')
+;
+
+INSERT INTO Dining_Halls(dhall_name, address, capacity, hours) VALUES ('Grace Dodge Dining Hall', 'Grace Dodge Hall, 525 W 120th St, New York, NY 10027', 40, 'Monday-Thursday, 11AM-7PM');
+
+CREATE TABLE Posts_Reviews
+(
+user_id VARCHAR(11) NOT NULL,
+datetime TIMESTAMP NOT NULL,
+rid VARCHAR(20),
+description VARCHAR(300),
+PRIMARY KEY (rid),
+FOREIGN KEY (user_id) REFERENCES Users
+)
+INSERT INTO Posts_Reviews (user_id, datetime, rid, description) VALUES
+('lys2121', '2024-10-18 13:45:00', 'R001', 'The pizza at John Jay Dining was surprisingly good today, but it was a bit too greasy.'),
+('jld2251', '2024-10-17 08:30:00', 'R002', 'Loved the vegan options at Ferris! The tofu stir-fry was well-seasoned and flavorful.'),
+('kd2945', '2024-10-16 18:15:00', 'R003', 'The pasta station at JJ''s Place could use some improvement. The sauce tasted bland.'),
+('kt2965', '2024-10-15 07:45:00', 'R004', 'Breakfast at Hewitt was decent, but the eggs were a bit too runny for my liking.'),
+('hhc2137', '2024-10-14 12:20:00', 'R005', 'The salad bar at John Jay Dining is always fresh and has a great variety of toppings.'),
+('swh2132', '2024-10-13 20:10:00', 'R006', 'JJ''s Place burgers are always a hit, but the fries were soggy this time.'),
+('aw3631', '2024-10-12 11:55:00', 'R007', 'I tried the sushi at Ferris, and it was surprisingly fresh! Would recommend.'),
+('sls2299', '2024-10-11 17:40:00', 'R008', 'The chicken parmesan at John Jay is my go-to. It''s always cooked perfectly.'),
+('wm2505', '2024-10-10 16:25:00', 'R009', 'The mac and cheese at Ferris is way too salty. I could barely finish it.'),
+('ms6858', '2024-10-09 14:05:00', 'R010', 'I had the ramen at JJ''s Place, and it was pretty good. The broth had a lot of flavor.');
+
+CREATE TABLE Highlights_Shoutouts
+(
+topic VARCHAR(20),
+scope VARCHAR(10) CHECK (scope = 'All' OR scope = 'Admins'),
+user_id VARCHAR(11) NOT NULL,
+datetime TIMESTAMP NOT NULL,
+rid VARCHAR(20),
+PRIMARY KEY (user_id, rid),
+FOREIGN KEY (user_id) REFERENCES Admin
+	ON DELETE CASCADE,
+FOREIGN KEY (rid) REFERENCES Posts_Reviews
+	ON DELETE CASCADE
+)
+
+
+
+INSERT INTO Highlights_Shoutouts(topic, scope, user_id, datetime, rid) VALUES
+('Best Burger', 'All', 'lys2121', '2024-10-20 12:45:00', 'R006'),
+('Top Vegan Dish', 'Admins', 'jld2251', '2024-10-19 15:30:00', 'R002'),
+('Fresh Salad', 'All', 'lys2121', '2024-10-18 11:20:00', 'R005'),
+('Sushi Surprise', 'Admins', 'lys2121', '2024-10-17 14:50:00', 'R007'),
+('Perfect Chicken Parm', 'All', 'jld2251', '2024-10-16 17:00:00', 'R008'),
+('Ramen Hit', 'All', 'lys2121', '2024-10-15 13:35:00', 'R010'),
+('Underrated Pasta', 'Admins', 'jld2251', '2024-10-14 18:10:00', 'R003'),
+('Breakfast Excellence', 'All', 'lys2121', '2024-10-13 07:50:00', 'R004'),
+('Salty Mac and Cheese', 'Admins', 'jld2251', '2024-10-12 16:45:00', 'R009'),
+('Pizza Delight', 'All', 'lys2121', '2024-10-11 13:55:00', 'R001');
+
+CREATE TABLE Time
+(
+datetime TIMESTAMP,
+PRIMARY KEY (datetime)
+)
+
+INSERT INTO Time(datetime) VALUES
+('2024-10-20 09:30:00'),
+('2024-10-20 14:15:00'),
+('2024-10-21 11:45:00'),
+('2024-10-21 16:30:00'),
+('2024-10-22 10:00:00'),
+('2024-10-22 13:00:00'),
+('2024-10-23 12:00:00'),
+('2024-10-23 17:15:00'),
+('2024-10-24 08:30:00'),
+('2024-10-24 15:00:00');
+
+
+CREATE TABLE Edits 
+(
+user_id VARCHAR(11),
+datetime TIMESTAMP,
+rid VARCHAR(20),
+PRIMARY KEY (user_id, rid, datetime),
+FOREIGN KEY (user_id) REFERENCES Admin,
+FOREIGN KEY (rid) REFERENCES Posts_Reviews,
+FOREIGN KEY (datetime) REFERENCES Time
+)
+
+INSERT INTO Edits (user_id, datetime, rid) VALUES
+('lys2121', '2024-10-20 09:30:00', 'R001'),
+('jld2251', '2024-10-20 14:15:00', 'R002'),
+('lys2121', '2024-10-21 11:45:00', 'R003'),
+('jld2251', '2024-10-21 16:30:00', 'R004'),
+('lys2121', '2024-10-22 10:00:00', 'R005'),
+('jld2251', '2024-10-22 13:00:00', 'R006'),
+('lys2121', '2024-10-23 12:00:00', 'R007'),
+('jld2251', '2024-10-23 17:15:00', 'R008'),
+('lys2121', '2024-10-24 08:30:00', 'R009'),
+('jld2251', '2024-10-24 15:00:00', 'R010');
+
+CREATE TABLE Likes
+(
+user_id VARCHAR(11),
+rid VARCHAR(20),
+goodbad INTEGER CHECK (goodbad = 1 OR goodbad = -1),
+PRIMARY KEY (user_id, rid),
+FOREIGN KEY (user_id) REFERENCES Users,
+FOREIGN KEY (rid) REFERENCES Posts_Reviews
+)
+INSERT INTO Likes (user_id, rid, goodbad) VALUES
+('lys2121', 'R001', 1),  -- User lys2121 likes review R001
+('jld2251', 'R002', -1), -- User jld2251 dislikes review R002
+('kd2945', 'R003', 1),   -- User kd2945 likes review R003
+('kt2965', 'R001', 1),   -- User kt2965 likes review R001
+('hhc2137', 'R004', -1), -- User hhc2137 dislikes review R004
+('swh2132', 'R005', 1),  -- User swh2132 likes review R005
+('aw3631', 'R006', -1),   -- User aw3631 dislikes review R006
+('sls2299', 'R007', 1),   -- User sls2299 likes review R007
+('wm2505', 'R008', 1),    -- User wm2505 likes review R008
+('ms6858', 'R009', -1);   -- User ms6858 dislikes review R009
+
+CREATE TABLE Menu_Is_From
+(
+dhall_name VARCHAR(50), 
+mealtime VARCHAR(20) CHECK (mealtime IN ('Breakfast', 'Lunch', 'Dinner')),
+date DATE,
+PRIMARY KEY (dhall_name, mealtime),
+FOREIGN KEY (dhall_name) REFERENCES Dining_Halls
+ON DELETE CASCADE
+)
+
+INSERT INTO Menu_Is_From (dhall_name, mealtime, date) VALUES 
+('John Jay Dining Hall', 'Breakfast', '2024-10-01'),
+('John Jay Dining Hall', 'Lunch', '2024-10-01'),
+('John Jay Dining Hall', 'Dinner', '2024-10-01'),
+('JJ''s Place', 'Breakfast', '2024-10-01'),
+('JJ''s Place', 'Lunch', '2024-10-01'),
+('Hewitt', 'Dinner', '2024-10-01'),
+('Diana', 'Breakfast', '2024-10-01'),
+('Chef Mike''s Sub Shop', 'Lunch', '2024-10-01'),
+('The Fac Shack', 'Dinner', '2024-10-01'),
+('Ferris Booth Commons', 'Breakfast', '2024-10-01'),
+('Chef Don''s Pizza Pi', 'Lunch', '2024-10-02'),
+('Grace Dodge Dining Hall', 'Lunch', '2024-10-01'), 
+('Grace Dodge Dining Hall', 'Breakfast', '2024-10-01')
+('Ferris Booth Commons', 'Lunch', '2024-10-01')
+('JJ''s Place', 'Dinner', '2024-10-11')
+('Hewitt','Breakfast','2024-10-08'), 
+('Ferris Booth Commons', 'Dinner', '2024-10-05');
+
+CREATE TABLE Evaluates
+(
+dhall_name VARCHAR(50) NOT NULL,
+mealtime VARCHAR(20) NOT NULL CHECK (mealtime IN ('Breakfast', 'Lunch', 'Dinner')),
+rid VARCHAR(20),
+PRIMARY KEY (rid),
+FOREIGN KEY (dhall_name, mealtime) REFERENCES Menu_Is_From,
+FOREIGN KEY (rid) REFERENCES Posts_Reviews
+)
+
+INSERT INTO Evaluates (dhall_name, mealtime, rid) VALUES 
+('John Jay Dining Hall', 'Breakfast', 'R001'), 
+('Ferris Booth Commons', 'Lunch', 'R002'), 
+('JJ''s Place', 'Dinner', 'R003'), 
+('Hewitt', 'Breakfast', 'R004'), 
+('John Jay Dining Hall', 'Lunch', 'R005'), 
+('JJ''s Place', 'Dinner', 'R006'), 
+('Ferris Booth Commons', 'Breakfast', 'R007'), 
+('John Jay Dining Hall', 'Lunch', 'R008'), 
+('Ferris Booth Commons', 'Dinner', 'R009'), 
+('JJ''s Place', 'Breakfast', 'R010');
+
+CREATE TABLE Rates 
+(
+rating INTEGER CHECK (rating >= 0 AND rating <=10),
+user_id VARCHAR(11), 
+dhall_name VARCHAR(50),
+PRIMARY KEY(user_id, dhall_name),
+FOREIGN KEY(user_id) REFERENCES Users,
+FOREIGN KEY(dhall_name) REFERENCES Dining_Halls
+)
+INSERT INTO Rates (rating, user_id, dhall_name) VALUES 
+(8, 'lys2121', 'John Jay Dining Hall'), 
+(7, 'jld2251', 'JJ''s Place'), 
+(9, 'kd2945', 'Hewitt'), 
+(6, 'kt2965', 'Diana'), 
+(10, 'hhc2137', 'Chef Mike''s Sub Shop'), 
+(5, 'swh2132', 'The Fac Shack'), 
+(4, 'aw3631', 'Ferris Booth Commons'), 
+(8, 'sls2299', 'Faculty House'), 
+(7, 'wm2505', 'Chef Don''s Pizza Pi'), 
+(9, 'ms6858', 'JJ''s Place');
+
+
+CREATE TABLE Judges
+(
+rating INTEGER CHECK (rating >= 0 AND rating <=10),
+user_id VARCHAR(11),
+dhall_name VARCHAR(50),
+mealtime VARCHAR(20) CHECK (mealtime IN ('Breakfast', 'Lunch', 'Dinner')),
+PRIMARY KEY (user_id, dhall_name, mealtime),
+FOREIGN KEY (user_id) REFERENCES Users,
+FOREIGN KEY (dhall_name, mealtime) REFERENCES Menu_Is_From
+)
+INSERT INTO Judges (rating, user_id, dhall_name, mealtime) VALUES 
+(9, 'lys2121', 'John Jay Dining Hall', 'Breakfast'), 
+(8, 'jld2251', 'JJ''s Place', 'Lunch'), 
+(7, 'kd2945', 'Hewitt', 'Dinner'), 
+(10, 'kt2965', 'Diana', 'Breakfast'), 
+(6, 'hhc2137', 'Chef Mike''s Sub Shop', 'Lunch'), 
+(5, 'swh2132', 'The Fac Shack', 'Dinner'), 
+(4, 'aw3631', 'Ferris Booth Commons', 'Breakfast'), 
+(8, 'sls2299', 'John Jay Dining Hall', 'Lunch'), 
+(7, 'wm2505', 'JJ''s Place', 'Breakfast'), 
+(9, 'ms6858', 'Hewitt', 'Dinner');
+
+CREATE TABLE Contains
+(
+dhall_name VARCHAR(50),
+mealtime VARCHAR(20) CHECK (mealtime IN ('Breakfast', 'Lunch', 'Dinner')),
+item_name VARCHAR(20),
+PRIMARY KEY (dhall_name, mealtime, item_name),
+FOREIGN KEY (dhall_name, mealtime) REFERENCES Menu_Is_From,
+FOREIGN KEY (dhall_name, item_name) REFERENCES Has_Item
+)
+Participation constraint not yet captured
+INSERT INTO Contains (dhall_name, mealtime, item_name) VALUES 
+('John Jay Dining Hall', 'Breakfast', 'Pancakes'), 
+('JJ''s Place', 'Lunch', 'Cheeseburger'), 
+('Hewitt', 'Dinner', 'Salad'), 
+('Diana', 'Breakfast', 'Oatmeal'), 
+('Chef Mike''s Sub Shop', 'Lunch', 'Grandma’s Special'), 
+('The Fac Shack', 'Dinner', 'Chicken'), 
+('Ferris Booth Commons', 'Breakfast', 'Croissant'),
+('Chef Don''s Pizza Pi', 'Lunch', 'Pepperoni Pizza');
+('Grace Dodge Dining Hall', 'Lunch', 'Vegetable Stir Fry'), 
+('Grace Dodge Dining Hall', 'Breakfast', 'Fruit Salad');
+
+
+CREATE TABLE Has_Item
+(
+dhall_name VARCHAR(50),
+item_name VARCHAR(20),
+dietary_info VARCHAR(50),
+ingredients VARCHAR(200),
+date DATE,
+station VARCHAR(20),
+PRIMARY KEY (dhall_name, item_name),
+FOREIGN KEY (dhall_name) REFERENCES Dining_Halls
+	ON DELETE CASCADE
+)
+
+INSERT INTO Has_Item (dhall_name, item_name, dietary_info, ingredients, date, station) VALUES 
+('John Jay Dining Hall', 'Pancakes', 'Vegetarian', 'Flour, Milk, Eggs, Sugar, Baking Powder', '2024-10-01', 'Main Station'), 
+('JJ''s Place', 'Cheeseburger', 'Meat', 'Beef Patty, Cheese, Lettuce, Tomato, Pickles', '2024-10-01', 'Grill Station'), 
+('Hewitt', 'Salad', 'Vegan', 'Lettuce, Tomatoes, Cucumbers, Carrots, Dressing', '2024-10-01', 'Salad Bar'), 
+('Diana', 'Oatmeal', 'Vegetarian', 'Oats, Water, Milk, Brown Sugar', '2024-10-01', 'Main Station'), 
+('Chef Mike''s Sub Shop', 'Grandma’s Special', 'Meat', 'Hoagie Roll, Turkey, Cheese, Lettuce, Tomato', '2024-10-01', 'Hot Special Station'), 
+('The Fac Shack', 'Chicken', 'Meat', 'Rice, Chicken, Sauce, Naan, Apple, Grandma’s Cookies', '2024-10-01', ''), 
+('Ferris Booth Commons', 'Croissant', 'Vegetarian', 'Croissant, Fruit Jam', '2024-10-01', 'Main Station'),
+('Chef Don''s Pizza Pi', 'Pepperoni Pizza', 'Meat', 'Dough, Cheese, Tomato Sauce, Pepperoni', '2024-10-02', ''),
+('Grace Dodge Dining Hall', 'Vegetable Stir Fry', 'Vegan', 'Broccoli, Bell Peppers, Carrots, Soy Sauce, Rice', '2024-10-01', 'Main Station'), 
+('Ferris Booth Commons', 'Vegetable Stir Fry', 'Vegan', 'Broccoli, Jalapenos, Carrots, Soy Sauce, Rice', '2024-10-03', 'Action Station'), 
+('Grace Dodge Dining Hall', 'Fruit Salad', 'Vegan', 'Mixed Fruits, Honey', '2024-10-01', 'Salad Bar'),
+('Diana', 'Ramen', 'Meat', 'Noodles, Pepper, Egg, Pork', '2024-10-01', 'Ramen Station'), 
+('Ferris Booth Commons', 'Mac and Cheese', 'Vegetarian', 'Pasta, Cheese', '2024-10-02', 'Main Station'),
+('Ferris Booth Commons', 'Sushi', 'Meat', 'Rice, Fish, Seaweed, Cucumber', '2024-10-02', 'Action Station'),
+('John Jay Dining Hall', 'Chicken Parmesan', 'Meat', 'Chicken, Cheese, Tomato Sauce, Bread', '2024-10-01', 'Main Station');
+('John Jay Dining Hall', 'Salad', 'Vegan', 'Lettuce, Tomatoes, Cucumbers, Carrots, Dressing, Vinaigrette', '2024-10-01', 'Salad Bar'),
+('John Jay Dining Hall', 'Cheese Pizza', 'Vegetarian', 'Cheese, Tomato Sauce, Dough', '2024-10-03', 'Main Station'),
+('JJ''s Place', 'Pasta', 'Vegetarian', 'Durum Wheat, Tomato Sauce, Olive Oil, Salt', '2024-10-16', 'Pasta Station'),
+('Hewitt', 'Eggs', 'Vegetarian', 'Eggs, Butter, Salt, Pepper', '2024-10-15', 'Breakfast Station'),
+('JJ''s Place', 'Ramen', 'Meat', 'Noodles, Broth, Pork, Green Onions, Soy Sauce', '2024-10-12', 'Asian Station');
+
+CREATE TABLE Discusses
+(
+rid VARCHAR(20),
+item_name VARCHAR(20),
+dhall_name VARCHAR(50),
+PRIMARY KEY (rid, dhall_name, item_name),
+FOREIGN KEY (rid) REFERENCES Posts_Reviews,
+FOREIGN KEY (dhall_name, item_name) REFERENCES Has_Item
+)
+Participation constraint not yet captured
+
+INSERT INTO Discusses (rid, item_name, dhall_name) VALUES 
+('R001', 'Cheese Pizza', 'John Jay Dining Hall'), 
+('R003', 'Vegetable Stir Fry', 'Ferris Booth Commons'), 
+('R003', 'Cheeseburger', 'JJ''s Place'), 
+('R004', 'Salad', 'Hewitt'), 
+('R005', 'Salad', 'John Jay Dining Hall'), 
+('R006', 'Cheeseburger', 'JJ''s Place'), 
+('R007', 'Sushi', 'Ferris Booth Commons'), 
+('R008', 'Chicken Parmesan', 'John Jay Dining Hall'), 
+('R009', 'Pepperoni Pizza', 'Chef Don''s Pizza Pi'), 
+('R010', 'Ramen', 'Diana');

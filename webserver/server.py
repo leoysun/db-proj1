@@ -19,17 +19,6 @@ import uuid
 tmpl_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'templates')
 app = Flask(__name__, template_folder=tmpl_dir)
 
-#
-# The following is a dummy URI that does not connect to a valid database. You will need to modify it to connect to your Part 2 database in order to use the data.
-#
-# XXX: The URI should be in the format of:
-#
-#     postgresql://user:password@104.196.222.236/proj1part2
-#
-# For example, if you had username gravano and password foobar, then the following line would be:
-#
-#     DATABASEURI = "postgresql://gravano:foobar@104.196.222.236/proj1part2"
-#
 DATABASEURI = "postgresql://jld2251:juliaduckey@104.196.222.236/proj1part2"
 
 #
@@ -94,9 +83,72 @@ def teardown_request(exception):
 # see for routing: https://flask.palletsprojects.com/en/2.0.x/quickstart/?highlight=routing
 # see for decorators: http://simeonfranklin.com/blog/2012/jul/1/python-decorators-in-12-steps/
 #
-@app.route('/')
-def index():
+# @app.route('/')
+"""
+def showTables():
+  cursor = g.conn.execute(text("""
+                               # SELECT dh.dhall_name, dh.address, dh.capacity, dh.hours, hi.item_name, hi.dietary_info, hi.ingredients
+                               # FROM dining_halls dh INNER JOIN has_item hi
+                               # ON dh.dhall_name = hi.dhall_name
+                               # """))
+  #### Access in dhalls.html using dhalls['item_name'], dhalls['dietary_info'], dhalls['ingredients'], etc. Maybe use AI for frontend fitting info in
+  #### NOTE: above query is still flawed as it doesn't include the dates and mealtime that the items are presented during. 
+  #### This is in the table "Menu_is_from" I believe. But that requires another join which we can figure out later if we want.
+"""
+  g.conn.commit()
+  dhalls = []
+  results = cursor.mappings().all()
+  for result in results:
+    dhalls.append(result)
+  cursor.close()
+
+  context = dict(data=dhalls)
+  return render_template("index.html", **context)
   """
+@app.route('/')
+def showTables():
+    # First, get the dining halls
+    cursor = g.conn.execute(text("""
+        SELECT DISTINCT dh.dhall_name, dh.address, dh.capacity, dh.hours
+        FROM dining_halls dh
+    """))
+    dhalls = [dict(row) for row in cursor.mappings()]
+    cursor.close()
+
+    # Then, get items for each dining hall
+    for dhall in dhalls:
+    # Fetch items for this specific dining hall
+        items_cursor = g.conn.execute(text("""
+            SELECT item_name, dietary_info, ingredients, station, date
+            FROM has_item
+            WHERE dhall_name = :dhall_name
+        """), {"dhall_name": dhall['dhall_name']})
+        
+        # Convert RowMapping objects to dictionaries for mutability
+        dhall['items'] = [dict(item) for item in items_cursor.mappings()]
+        items_cursor.close()
+
+
+    # Fetch reviews
+    reviews_cursor = g.conn.execute(text("""
+        SELECT DISTINCT pr.*, j.rating, e.dhall_name
+        FROM posts_reviews pr 
+        INNER JOIN evaluates e ON pr.rid = e.rid
+        INNER JOIN judges j ON j.user_id = pr.user_id AND j.dhall_name = e.dhall_name AND j.mealtime = e.mealtime
+        ORDER BY pr.datetime DESC
+        LIMIT 5
+    """))
+    reviews = reviews_cursor.mappings().all()
+    reviews_cursor.close()
+
+    context = {
+        'data': dhalls,
+        'reviews': reviews
+    }
+    return render_template("index.html", **context)
+# @app.route('/')
+# def index():
+"""
   request is a special object that Flask provides to access web request information:
 
   request.method:   "GET" or "POST"
@@ -164,7 +216,7 @@ def index():
   # render_template looks in the templates/ folder for files.
   # for example, the below file reads template/index.html
   #
-  return render_template("index.html") #, **context)
+  # return render_template("index.html") #, **context)
 
 #
 # This is an example of a different path.  You can see it at:
@@ -214,26 +266,6 @@ def set_rating():
   print(g.rating)
   return redirect('/add')
 
-@app.route('/showDhalls')
-def showTables():
-  cursor = g.conn.execute(text("""
-                               SELECT dh.dhall_name, dh.address, dh.capacity, dh.hours, hi.item_name, hi.dietary_info, hi.ingredients
-                               FROM dining_halls dh INNER JOIN has_item hi
-                               ON dh.dhall_name = hi.dhall_name
-                               """))
-  #### Access in dhalls.html using dhalls['item_name'], dhalls['dietary_info'], dhalls['ingredients'], etc. Maybe use AI for frontend fitting info in
-  #### NOTE: above query is still flawed as it doesn't include the dates and mealtime that the items are presented during. 
-  #### This is in the table "Menu_is_from" I believe. But that requires another join which we can figure out later if we want.
-  g.conn.commit()
-  dhalls = []
-  results = cursor.mappings().all()
-  for result in results:
-    dhalls.append(result)
-  cursor.close()
-
-  context = dict(data=dhalls)
-  return render_template("dhalls.html", **context)
-
 #currently in progress
 #@app.route('/search')
 #def search():
@@ -267,7 +299,7 @@ def showReviews():
   reviews = cursor.mappings().all()
   cursor.close()
   context = dict(reviews=reviews)
-  return render_template('dhalls.html', **context)
+  return render_template('index.html', **context)
 
 @app.route('/submitReview', methods=['GET', 'POST'])
 def submitReview():
