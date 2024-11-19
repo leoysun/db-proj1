@@ -183,8 +183,11 @@ def another():
 def add(): 
   rating = request.form['rating']
   params_dict = {"rating":rating, "user_id":g.user_id, "dhall_name":g.dhall_name} # ADD FORMS TO ADJUST THE DHALLNAME AND USERID
-  g.conn.execute(text('INSERT INTO rates(rating, user_id, dhall_name) VALUES (:rating, :user_id, :dhall_name)'), params_dict)
+  g.conn.execute(text("""INSERT INTO rates(rating, user_id, dhall_name) 
+                      VALUES (:rating, :user_id, :dhall_name)
+                      ON CONFLICT (user_id, dhall_name) DO UPDATE SET rating = EXCLUDED.rating")"""), params_dict)
   g.conn.commit()
+
   return redirect('/')
 
 @app.route('/id', methods=['POST'])
@@ -234,23 +237,29 @@ def showTables():
 #TODO: get all food info on dhall page
 @app.route('/reviews')
 def showReviews():
-  cursor = g.conn.execute(text("SELECT dhall_name FROM dining_halls"))
-  g.conn.commit()
-  dhalls = [row[0] for row in cursor]
-  cursor.close()
+  #cursor = g.conn.execute(text("""
+  #  SELECT dhall_name 
+  #  FROM dining_halls dh, evaluates e
+  #  WHERE dh.dhall_name = e.dhall_name
+  #  """))
+  #g.conn.commit()
+  #dhalls = [row[0] for row in cursor]
+  #cursor.close()
     
   # Get all reviews with dining hall info
   query = """
-    SELECT pr.*, r.rating, r.dhall_name
-    FROM Posts_Reviews pr
-    JOIN rates r ON pr.user_id = r.user_id
+    SELECT DISTINCT pr.*, j.rating, e.dhall_name
+    FROM posts_reviews pr INNER JOIN evaluates e
+    ON pr.rid = e.rid
+    INNER JOIN judges j
+    ON j.user_id = pr.user_id AND j.dhall_name = e.dhall_name AND j.mealtime = e.mealtime
     """
   
   cursor = g.conn.execute(text(query))
   g.conn.commit()
   reviews = cursor.mappings().all()
   cursor.close()
-  context = dict(dhalls=dhalls, reviews=reviews)
+  context = dict(reviews=reviews)
   return render_template('dhalls.html', **context)
 
 @app.route('/submitReview', methods=['POST'])
@@ -290,6 +299,8 @@ def submitReview():
         g.conn.execute(text("""
             INSERT INTO rates (rating, user_id, dhall_name)
             VALUES (:rating, :user_id, :dhall_name)
+            ON CONFLICT (user_id, dhall_name) 
+            DO UPDATE SET rating = EXCLUDED.rating
         """), rating_params)
         
         # Insert into evaluates
