@@ -204,6 +204,62 @@
                                                 </div>
                                             {% endif %}
                                         {% endif %}
+
+                                        {% if dhall['dhall_name'] == "Diana" %}
+                                            {% if station['station'] == "Main Station" %}
+                                                <div class="bg-gray-50 rounded p-3">
+                                                    <h4 class="font-bold text-gray-900">Main Station</h4>
+                                                    <ul>
+                                                        {% for item in station['items'] %}
+                                                        <li>{{ item['name'] }} ({{ item['dietary_info'] }})</li>
+                                                        <h4 class="italic">{{ item['mealtime'] }}</h4>
+                                                        {% endfor %}
+                                                    </ul>
+                                                </div>
+                                            {% endif %}
+                                        {% endif %}
+
+                                        {% if dhall['dhall_name'] == "Chef Don's Pizza Pi" %}
+                                            {% if station['station'] == "Main Station" %}
+                                                <div class="bg-gray-50 rounded p-3">
+                                                    <h4 class="font-bold text-gray-900">Main Station</h4>
+                                                    <ul>
+                                                        {% for item in station['items'] %}
+                                                        <li>{{ item['name'] }} ({{ item['dietary_info'] }})</li>
+                                                        <h4 class="italic">{{ item['mealtime'] }}</h4>
+                                                        {% endfor %}
+                                                    </ul>
+                                                </div>
+                                            {% endif %}
+                                        {% endif %}
+
+                                        {% if dhall['dhall_name'] == "Faculty House" %}
+                                            {% if station['station'] == "Main Station" %}
+                                                <div class="bg-gray-50 rounded p-3">
+                                                    <h4 class="font-bold text-gray-900">Main Station</h4>
+                                                    <ul>
+                                                        {% for item in station['items'] %}
+                                                        <li>{{ item['name'] }} ({{ item['dietary_info'] }})</li>
+                                                        <h4 class="italic">{{ item['mealtime'] }}</h4>
+                                                        {% endfor %}
+                                                    </ul>
+                                                </div>
+                                            {% endif %}
+                                        {% endif %}
+
+                                        {% if dhall['dhall_name'] == "The Fac Shack" %}
+                                            {% if station['station'] == "Main Station" %}
+                                                <div class="bg-gray-50 rounded p-3">
+                                                    <h4 class="font-bold text-gray-900">Main Station</h4>
+                                                    <ul>
+                                                        {% for item in station['items'] %}
+                                                        <li>{{ item['name'] }} ({{ item['dietary_info'] }})</li>
+                                                        <h4 class="italic">{{ item['mealtime'] }}</h4>
+                                                        {% endfor %}
+                                                    </ul>
+                                                </div>
+                                            {% endif %}
+                                        {% endif %}
                                     {% endfor %}
                                 </div>
                         </div>
