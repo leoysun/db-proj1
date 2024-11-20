@@ -119,13 +119,11 @@ def showTables():
     for dhall in dhalls:
         # Fetch items for this specific dining hall, grouped by station
         items_cursor = g.conn.execute(text("""
-            SELECT station, 
-                   item_name,
-                   dietary_info
-            FROM has_item
-            WHERE dhall_name = :dhall_name
-              AND station != ''
+            SELECT hi.dhall_name, hi.item_name, hi.dietary_info, hi.ingredients, hi.station, c.mealtime
+            FROM contains c, has_item hi
+            WHERE hi.dhall_name = c.dhall_name AND c.item_name = hi.item_name AND hi.dhall_name = :dhall_name
         """), {"dhall_name": dhall['dhall_name']})
+        #### ENSURE THIS QUERY WORKS
         
         # Group items by station
         stations = {}
@@ -144,7 +142,6 @@ def showTables():
             } for station, items in stations.items()
         ]
         items_cursor.close()
-
 
 
     # Fetch reviews
