@@ -359,6 +359,18 @@ def submitReview():
             ON CONFLICT (user_id, dhall_name) 
             DO UPDATE SET rating = EXCLUDED.rating
         """), rating_params)
+
+        # Insert into Menu_is_from
+        menu_is_from_params = {
+            'dhall_name': request.form['dhall_name'],
+            'mealtime': request.form['mealtime'],
+            'date': current_time.date()
+        }
+        g.conn.execute(text("""
+            INSERT INTO Menu_is_from (dhall_name, mealtime, date)
+            VALUES (:dhall_name, :mealtime, :date)
+        """), menu_is_from_params)
+        g.conn.commit()
         
         # Insert into evaluates
         evaluates_params = {
