@@ -57,21 +57,23 @@
                                     {% if dhall['dhall_name'] == "John Jay Dining Hall" %}
                                         {% if station['station'] == "Main Station" %}
                                             <div class="bg-gray-50 rounded p-3">
-                                                <h4 class="font-medium text-gray-900">Main Line</h4>
+                                                <h4 class="font-bold text-gray-900">Main Line</h4>
                                                 <ul>
                                                     {% for item in station['items'] %}
                                                     <li>{{ item['name'] }} ({{ item['dietary_info'] }})</li>
-
+                                                    <h4 class="italic">{{ item['mealtime'] }}</h4>
+                                                    
                                                     {% endfor %}
                                                 </ul>
                                             </div>
                                         {% endif %}
                                         {% if station['station'] == "Salad Bar" %}
                                             <div class="bg-gray-50 rounded p-3">
-                                                <h4 class="font-medium text-gray-900">Salad Bar</h4>
+                                                <h4 class="font-bold text-gray-900">Salad Bar</h4>
                                                 <ul>
                                                     {% for item in station['items'] %}
                                                     <li>{{ item['name'] }} ({{ item['dietary_info'] }})</li>
+                                                    <h4 class="italic">{{ item['mealtime'] }}</h4>
                                                     {% endfor %}
                                                 </ul>
                                             </div>
@@ -81,20 +83,22 @@
                                     {% if dhall['dhall_name'] == "Ferris Booth Commons" %}
                                         {% if station['station'] == "Main Station" %}
                                             <div class="bg-gray-50 rounded p-3">
-                                                <h4 class="font-medium text-gray-900">Main Station</h4>
+                                                <h4 class="font-bold text-gray-900">Main Station</h4>
                                                 <ul>
                                                     {% for item in station['items'] %}
                                                     <li>{{ item['name'] }} ({{ item['dietary_info'] }})</li>
+                                                    <h4 class="italic">{{ item['mealtime'] }}</h4>
                                                     {% endfor %}
                                                 </ul>
                                             </div>
                                         {% endif %}
                                         {% if station['station'] == "Action Station" %}
                                             <div class="bg-gray-50 rounded p-3">
-                                                <h4 class="font-medium text-gray-900">Action Station</h4>
+                                                <h4 class="font-bold text-gray-900">Action Station</h4>
                                                 <ul>
                                                     {% for item in station['items'] %}
                                                     <li>{{ item['name'] }} ({{ item['dietary_info'] }})</li>
+                                                    <h4 class="italic">{{ item['mealtime'] }}</h4>
                                                     {% endfor %}
                                                 </ul>
                                             </div>
@@ -104,30 +108,33 @@
                                         {% if dhall['dhall_name'] == "JJ's Place" %}
                                             {% if station['station'] == "Grill Station" %}
                                                 <div class="bg-gray-50 rounded p-3">
-                                                    <h4 class="font-medium text-gray-900">Grill Station</h4>
+                                                    <h4 class="font-bold text-gray-900">Grill Station</h4>
                                                     <ul>
                                                         {% for item in station['items'] %}
                                                         <li>{{ item['name'] }} ({{ item['dietary_info'] }})</li>
+                                                        <h4 class="italic">{{ item['mealtime'] }}</h4>
                                                         {% endfor %}
                                                     </ul>
                                                 </div>
                                             {% endif %}
                                             {% if station['station'] == "Asian Station" %}
                                                 <div class="bg-gray-50 rounded p-3">
-                                                    <h4 class="font-medium text-gray-900">Asian Station</h4>
+                                                    <h4 class="font-bold text-gray-900">Asian Station</h4>
                                                     <ul>
                                                         {% for item in station['items'] %}
                                                         <li>{{ item['name'] }} ({{ item['dietary_info'] }})</li>
+                                                        <h4 class="italic">{{ item['mealtime'] }}</h4>
                                                         {% endfor %}
                                                     </ul>
                                                 </div>
                                             {% endif %}
                                             {% if station['station'] == "Pasta Station" %}
                                                 <div class="bg-gray-50 rounded p-3">
-                                                    <h4 class="font-medium text-gray-900">Pasta Station</h4>
+                                                    <h4 class="font-bold text-gray-900">Pasta Station</h4>
                                                     <ul>
                                                         {% for item in station['items'] %}
                                                         <li>{{ item['name'] }} ({{ item['dietary_info'] }})</li>
+                                                        <h4 class="italic">{{ item['mealtime'] }}</h4>
                                                         {% endfor %}
                                                     </ul>
                                                 </div>
@@ -137,20 +144,22 @@
                                         {% if dhall['dhall_name'] == "Grace Dodge Dining Hall" %}
                                             {% if station['station'] == "Main Station" %}
                                                 <div class="bg-gray-50 rounded p-3">
-                                                    <h4 class="font-medium text-gray-900">Main Station</h4>
+                                                    <h4 class="font-bold text-gray-900">Main Station</h4>
                                                     <ul>
                                                         {% for item in station['items'] %}
                                                         <li>{{ item['name'] }} ({{ item['dietary_info'] }})</li>
+                                                        <h4 class="italic">{{ item['mealtime'] }}</h4>
                                                         {% endfor %}
                                                     </ul>
                                                 </div>
                                             {% endif %}
                                             {% if station['station'] == "Salad Bar" %}
                                                 <div class="bg-gray-50 rounded p-3">
-                                                    <h4 class="font-medium text-gray-900">Salad Bar</h4>
+                                                    <h4 class="font-bold text-gray-900">Salad Bar</h4>
                                                     <ul>
                                                         {% for item in station['items'] %}
                                                         <li>{{ item['name'] }} ({{ item['dietary_info'] }})</li>
+                                                        <h4 class="italic">{{ item['mealtime'] }}</h4>
                                                         {% endfor %}
                                                     </ul>
                                                 </div>
@@ -160,20 +169,22 @@
                                         {% if dhall['dhall_name'] == "Hewitt" %}
                                             {% if station['station'] == "Salad Bar" %}
                                                 <div class="bg-gray-50 rounded p-3">
-                                                    <h4 class="font-medium text-gray-900">Salad Bar</h4>
+                                                    <h4 class="font-bold text-gray-900">Salad Bar</h4>
                                                     <ul>
                                                         {% for item in station['items'] %}
                                                         <li>{{ item['name'] }} ({{ item['dietary_info'] }})</li>
+                                                        <h4 class="italic">{{ item['mealtime'] }}</h4>
                                                         {% endfor %}
                                                     </ul>
                                                 </div>
                                             {% endif %}
                                             {% if station['station'] == "Breakfast Station" %}
                                                 <div class="bg-gray-50 rounded p-3">
-                                                    <h4 class="font-medium text-gray-900">Breakfast Station</h4>
+                                                    <h4 class="font-bold text-gray-900">Breakfast Station</h4>
                                                     <ul>
                                                         {% for item in station['items'] %}
                                                         <li>{{ item['name'] }} ({{ item['dietary_info'] }})</li>
+                                                        <h4 class="italic">{{ item['mealtime'] }}</h4>
                                                         {% endfor %}
                                                     </ul>
                                                 </div>
@@ -183,10 +194,11 @@
                                         {% if dhall['dhall_name'] == "Chef Mike's Sub Shop" %}
                                             {% if station['station'] == "Hot Special Station" %}
                                                 <div class="bg-gray-50 rounded p-3">
-                                                    <h4 class="font-medium text-gray-900">Hot Special Station</h4>
+                                                    <h4 class="font-bold text-gray-900">Hot Special Station</h4>
                                                     <ul>
                                                         {% for item in station['items'] %}
                                                         <li>{{ item['name'] }} ({{ item['dietary_info'] }})</li>
+                                                        <h4 class="italic">{{ item['mealtime'] }}</h4>
                                                         {% endfor %}
                                                     </ul>
                                                 </div>

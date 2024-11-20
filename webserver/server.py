@@ -132,7 +132,9 @@ def showTables():
                 stations[item['station']] = []
             stations[item['station']].append({
                 'name': item['item_name'],
-                'dietary_info': item['dietary_info'] or 'No info'
+                'dietary_info': item['dietary_info'] or 'No info',
+                'ingredients': item['ingredients'] or 'No info',
+                'mealtime': item['mealtime']
             })
         
         dhall['stations'] = [
