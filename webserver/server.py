@@ -148,12 +148,9 @@ def showTables():
 
     # Fetch reviews
     reviews_cursor = g.conn.execute(text("""
-        SELECT DISTINCT pr.*, j.rating, e.dhall_name
-        FROM posts_reviews pr 
-        INNER JOIN evaluates e ON pr.rid = e.rid
-        INNER JOIN judges j ON j.user_id = pr.user_id AND j.dhall_name = e.dhall_name AND j.mealtime = e.mealtime
-        ORDER BY pr.datetime DESC
-        LIMIT 5
+        SELECT pr.*, e.dhall_name, d.item_name, e.mealtime, j.rating
+        FROM discusses d, posts_reviews pr, evaluates e, judges j
+        WHERE d.rid = e.rid AND e.rid = pr.rid AND (j.user_id = pr.user_id AND j.dhall_name = e.dhall_name AND j.mealtime = e.mealtime)
     """))
     reviews = reviews_cursor.mappings().all()
     reviews_cursor.close()
@@ -350,33 +347,6 @@ def submitReview():
     
     # Insert the review and rating
     try:
-        # Insert into Posts_Reviews
-        review_params = {
-            'user_id': request.form['user_id'],
-            'datetime': current_time,
-            'rid': rid,
-            'description': request.form['description'],
-            'item_name': request.form['item_name']
-        }
-        g.conn.execute(text("""
-            INSERT INTO Posts_Reviews (user_id, datetime, rid, description)
-            VALUES (:user_id, :datetime, :rid, :description) 
-        """), review_params)
-        ######TODO: add item_name in a query
-        
-        # Insert into rates
-        rating_params = {
-            'user_id': request.form['user_id'],
-            'dhall_name': request.form['dhall_name'],
-            'rating': request.form['rating']
-        }
-        g.conn.execute(text("""
-            INSERT INTO rates (rating, user_id, dhall_name)
-            VALUES (:rating, :user_id, :dhall_name)
-            ON CONFLICT (user_id, dhall_name) 
-            DO UPDATE SET rating = EXCLUDED.rating
-        """), rating_params)
-
         # Insert into Menu_is_from
         menu_is_from_params = {
             'dhall_name': request.form['dhall_name'],
@@ -386,8 +356,21 @@ def submitReview():
         g.conn.execute(text("""
             INSERT INTO Menu_is_from (dhall_name, mealtime, date)
             VALUES (:dhall_name, :mealtime, :date)
+            ON CONFLICT (dhall_name, mealtime) DO UPDATE SET date = EXCLUDED.date
         """), menu_is_from_params)
         g.conn.commit()
+
+        # Insert into Posts_Reviews
+        review_params = {
+            'user_id': request.form['user_id'],
+            'datetime': current_time,
+            'rid': rid,
+            'description': request.form['description'],
+        }
+        g.conn.execute(text("""
+            INSERT INTO Posts_Reviews (user_id, datetime, rid, description)
+            VALUES (:user_id, :datetime, :rid, :description) 
+        """), review_params)
         
         # Insert into evaluates
         evaluates_params = {
@@ -400,6 +383,44 @@ def submitReview():
             VALUES (:dhall_name, :mealtime, :rid)
         """), evaluates_params)
         g.conn.commit()
+        
+        # Insert into Discusses
+        discusses_params = {
+            'rid': rid,
+            'item_name': request.form['item_name'],
+            'dhall_name': request.form['dhall_name'],
+        }
+        g.conn.execute(text("""
+            INSERT INTO Discusses (rid, item_name, dhall_name)
+            VALUES (:rid, :item_name, :dhall_name)
+        """), discusses_params)
+        g.conn.commit()
+
+        # Insert into Judges
+        judges_params = {
+            'rating': request.form['rating'],
+            'user_id': request.form['user_id'],
+            'dhall_name': request.form['dhall_name'],
+            'mealtime': request.form['mealtime'],
+        }
+        g.conn.execute(text("""
+            INSERT INTO Judges (rating, user_id, dhall_name, mealtime)
+            VALUES (:rating, :user_id, :dhall_name, :mealtime)
+        """), judges_params)
+        g.conn.commit()
+
+        # Insert into rates
+        rating_params = {
+            'user_id': request.form['user_id'],
+            'dhall_name': request.form['dhall_name'],
+            'rating': request.form['rating']
+        }
+        g.conn.execute(text("""
+            INSERT INTO rates (rating, user_id, dhall_name)
+            VALUES (:rating, :user_id, :dhall_name)
+            ON CONFLICT (user_id, dhall_name) 
+            DO UPDATE SET rating = EXCLUDED.rating
+        """), rating_params)
 
         return redirect('/reviews')
         

@@ -23,7 +23,7 @@
             {% for review in reviews %}
             <div class="mb-6 border-b pb-4 last:border-b-0">
                 <div class="flex justify-between items-center">
-                    <h3 class="text-lg font-semibold text-gray-900">{{ review['dhall_name']}}{{' - '}}{{review['mealtime']}}</h3>
+                    <h3 class="text-lg font-semibold text-gray-900">{{ review['dhall_name']}}{{' '}}{{review['mealtime']}}{{': '}}{{review['item_name']}}</h3>
                     <p class="text-sm text-gray-500">{{ review['datetime'].strftime("%B %d, %Y %H:%M") }}</p>
                 </div>
                 <div class="flex items-center mt-2">
@@ -34,7 +34,7 @@
                             </svg>
                         {% endfor %}
                     </div>
-                    <span class="ml-2 text-sm text-gray-600">({{ review['rating'] }}/5)</span>
+                    <span class="ml-2 text-sm text-gray-600">({{ review['rating'] }}/10)</span>
                 </div>
                 <p class="text-sm text-gray-700 mt-2">{{ review['description'] }}</p>
                 <p class="text-sm text-gray-500 mt-2 italic">Review by User ID: {{ review['user_id'] }}</p>
