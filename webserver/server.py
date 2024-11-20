@@ -303,11 +303,9 @@ def showReviews():
     
   # Get SOME reviews with dining hall info
   query = """
-    SELECT DISTINCT pr.*, j.rating, e.dhall_name
-    FROM posts_reviews pr INNER JOIN evaluates e
-    ON pr.rid = e.rid
-    INNER JOIN judges j
-    ON j.user_id = pr.user_id AND j.dhall_name = e.dhall_name AND j.mealtime = e.mealtime
+    SELECT pr.*, e.dhall_name, d.item_name, e.mealtime, j.rating
+    FROM discusses d, posts_reviews pr, evaluates e, judges j
+    WHERE d.rid = e.rid AND e.rid = pr.rid AND (j.user_id = pr.user_id AND j.dhall_name = e.dhall_name AND j.mealtime = e.mealtime)
     """
   
   cursor = g.conn.execute(text(query))
@@ -337,10 +335,11 @@ def submitUser():
 
 @app.route('/submitReview', methods=['GET', 'POST'])
 def submitReview():
+    user_id = request.form.get('user_id')  # Get user ID from form input
     dhall_name = request.form.get('dhall_name')
     rating = request.form.get('rating')
     description = request.form.get('description')
-    user_id = request.form.get('user_id')  # Get user ID from form input
+    item_name = request.form.get('item_name')
 
     # Ensure user_id is not empty
     if not user_id:
@@ -356,12 +355,14 @@ def submitReview():
             'user_id': request.form['user_id'],
             'datetime': current_time,
             'rid': rid,
-            'description': request.form['description']
+            'description': request.form['description'],
+            'item_name': request.form['item_name']
         }
         g.conn.execute(text("""
             INSERT INTO Posts_Reviews (user_id, datetime, rid, description)
-            VALUES (:user_id, :datetime, :rid, :description)
+            VALUES (:user_id, :datetime, :rid, :description) 
         """), review_params)
+        ######TODO: add item_name in a query
         
         # Insert into rates
         rating_params = {

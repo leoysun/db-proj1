@@ -23,7 +23,7 @@
             {% for review in reviews %}
             <div class="mb-6 border-b pb-4 last:border-b-0">
                 <div class="flex justify-between items-center">
-                    <h3 class="text-lg font-semibold text-gray-900">{{ review['dhall_name'] }}</h3>
+                    <h3 class="text-lg font-semibold text-gray-900">{{ review['dhall_name']}}{{' - '}}{{review['mealtime']}}</h3>
                     <p class="text-sm text-gray-500">{{ review['datetime'].strftime("%B %d, %Y %H:%M") }}</p>
                 </div>
                 <div class="flex items-center mt-2">
