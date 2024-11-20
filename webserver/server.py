@@ -157,8 +157,7 @@ def showTables():
     reviews_cursor.close()
 
     context = {
-        'data': dhalls,
-        'reviews': reviews
+        'data': dhalls
     }
     return render_template("index.html", **context)
 # @app.route('/')
@@ -314,7 +313,25 @@ def showReviews():
   reviews = cursor.mappings().all()
   cursor.close()
   context = dict(reviews=reviews)
-  return render_template('index.html', **context)
+  return render_template('reviews.html', **context)
+
+@app.route('/submitUser', methods=['GET', 'POST'])
+def submitUser():
+  user_id = request.form.get('user_id')
+  if not user_id:
+    return "User ID cannot be blank", 400
+   
+  user_params = {
+      'user_id': request.form['user_id'],
+      'username': request.form['username'],
+    }
+  g.conn.execute(text("""
+      INSERT INTO Users (user_id, username)
+      VALUES (:user_id, :username)
+      """), user_params)
+  g.conn.commit()
+  return redirect('/')
+  
 
 @app.route('/submitReview', methods=['GET', 'POST'])
 def submitReview():
