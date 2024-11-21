@@ -29,22 +29,24 @@ Notes:
 The same item can be repeatedly reviewed. 
 
 
+
 The most interesting web pages are: 
 1. The main page. 
 - There are 2 primary forms. 
     - First, the User ID form acts as a form where the user can "log in" by inputting their User ID and username. Should the User ID not already exist in the Users table, this form adds the user to the database. If the inputted User ID is already in the database but receives a different than initially recorded username input, this form also updates the username for that corresponding user. Most importantly, however, this form saves the user information so that the user can delete their own reviews on the Delete reviews page. Moreover, once the user logs in, the navbar will update to reflect the User ID information of the current logged in user for clarity, and this is saved when the user proceeds to see all reviews or delete reviews.
         - This is particularly interesting since the User ID input here is stored across all pages and can reduce redundancy in submitting the same information later on. We weren't sure if this was even possible at first, so we felt proud after figuring this out.
         - This is also an example of how one singular form can be used in multiple ways for various database purposes!
-    - Second, the user can write a review by inputting their user ID, selecting other attributes fo the meal, and providing a rating on a scale of 1-10 and review. Upon submission, the review is stored in several tables (Menu_is_from, Posts_Reviews, Evaluates, Discusses). The user is then brought to a page of all reviews. Alternatively, one can bypass needing to submit a review to see all reviews by simply clicking the See All Reviews button.
+    - Second, the user can write a review by inputting their user ID, selecting other attributes fo the meal, and providing a rating on a scale of 1-10 and review. Upon submission, the data associated with the review is stored in several tables (Menu_is_from, Posts_Reviews, Evaluates, Discusses) from which data is retrieved for the reviews display. The user is then brought to a page of all reviews. Alternatively, one can bypass needing to submit a review to see all reviews by simply clicking the See All Reviews button.
         - This shows how just one simple form interacts with so many entity sets and relationship sets. Since reviews is a major part of our application, this feature is particularly important.
 - The core component of our web application is to display dining hall info all in one page. To do so, we iterate through all dining halls and extract information about them to display. We also iterate through all dining hall stations to display the items of each dining hall under each station, which was difficult to implement at first. With each item that is displayed, we also indicate the specific mealtime that it is shown for, as well as any dietary restrictions. Most uniquely, each dining hall also displays an average rating, calculated by taking the average of all the reviews for each item under one dining hall.
     - This feature also interacts with several different tables, such as the Menu_is_from, has_item, and contains. 
-    - Displaying the average rating was particularly satisfying to accomplish, as it felt like a cohesive effort in connecting the dining hall info part of our application to the reviews part. It was cool to see how two different parts of our application could interact in such a natural manner.
-2. The Delete reviews page. First of all,
+    - Displaying the average rating using an aggregate operator was particularly satisfying to accomplish, as it felt like a cohesive effort in connecting the dining hall info part of our application to the reviews part. It was cool to see how two different parts of our application could interact in such a natural manner.
+
+2. The Delete reviews page. First of all, 
 
 
 
 
 
 AI Tools:
-ChatGPT and Claude were used for front-end and syntax purposes only. In particular, the styling of the app was done mostly by AI
+ChatGPT and Claude were used for front-end and syntax purposes only. In particular, a significant amount of the styling of the app was done by AI. When our code logic was correct but there were some minor syntax issues that blocked our progression, we employed some AI usage as well. 
