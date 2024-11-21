@@ -285,7 +285,16 @@ def showReviews():
   #    review['likes_count'] = likes_dict['likes_count']
   #    review['dislikes_count'] = likes_dict['dislikes_count']
 
-  context = dict(reviews=reviews, likes_dict=likes_dict)
+  shoutouts_query = """
+  SELECT hs.topic, hs.rid, hs.user_id
+  FROM Highlights_shoutouts hs
+  """
+  shoutouts_cursor = g.conn.execute(text(shoutouts_query))
+  g.conn.commit()
+  shoutouts = shoutouts_cursor.mappings().all()
+  shoutouts_cursor.close()
+
+  context = dict(reviews=reviews, likes_dict=likes_dict, shoutouts=shoutouts)
   #merged_context = {**likes_dict, **context}
 
   return render_template('reviews.html', global_user_id=global_user_id, is_admin=is_admin, **context)
@@ -307,13 +316,14 @@ def highlightReview():
   is_admin = global_user_id in admin_ids
 
   if not is_admin:
-     return "Unauthorized", 403
+     return "Unauthorized. Log in again.", 403
   topic = request.form.get('topic')
   rid = request.form.get('rid')
 
   insert_query = """
         INSERT INTO Highlights_Shoutouts (topic, scope, user_id, datetime, rid)
-        VALUES (:topic, 'Admins', :user_id, NOW(), :rid)
+        VALUES (:topic, 'All', :user_id, NOW(), :rid)
+        ON CONFLICT (user_id, rid) DO UPDATE SET topic = EXCLUDED.topic, datetime = EXCLUDED.datetime
     """
   g.conn.execute(text(insert_query), {'topic': topic, 'user_id': global_user_id, 'rid': rid})
   g.conn.commit()

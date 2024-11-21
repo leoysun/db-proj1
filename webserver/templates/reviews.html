@@ -42,22 +42,36 @@
                     <h3 class="text-lg font-semibold text-gray-900">{{ review['dhall_name']}}{{' '}}{{review['mealtime']}}{{': '}}{{review['item_name']}}</h3>
                     <p class="text-sm text-gray-500">{{ review['datetime'].strftime("%B %d, %Y %H:%M") }}</p>
                 </div>
-                <div class="flex items-center space-x-2 mt-2">
-                    <form action="/reviewReaction" method="POST" class="flex-1">
-                        <input type="hidden" name="rid" value="{{ review['rid'] }}">
-                        <button type="submit" name="reaction" value="1" class="w-full bg-green-500 text-white px-2 py-1 rounded hover:bg-green-600 transition-colors">
-                            👍 Like
-                        </button>
-                    </form>
-                    <form action="/reviewReaction" method="POST" class="flex-1">
-                        <input type="hidden" name="rid" value="{{ review['rid'] }}">
-                        <button type="submit" name="reaction" value="-1" class="w-full bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600 transition-colors">
-                            👎 Dislike 
-                        </button>
-                    </form>
-                    Net likes: {{ likes_dict.get(review['rid'], 0) }}
+                
+                {% for shoutout in shoutouts %}
+                    {% if shoutout['rid'] == review['rid'] %}
+                    <div class="mt-2 mb-3">
+                        <p class="text-lg font-bold text-blue-600">🏆 Shoutout from {{shoutout['user_id']}}</p>
+                        <p class="text-base text-blue-800">{{ shoutout['topic'] }}</p>
+                    </div>
+                    {% endif %}
+                {% endfor %}
 
+                <div class="flex items-center mt-4">
+                    <div class="flex-1 flex items-center space-x-2">
+                        <form action="/reviewReaction" method="POST" class="flex-1">
+                            <input type="hidden" name="rid" value="{{ review['rid'] }}">
+                            <button type="submit" name="reaction" value="1" class="w-full bg-green-500 text-white px-2 py-1 rounded hover:bg-green-600 transition-colors">
+                                👍 Like
+                            </button>
+                        </form>
+                        <form action="/reviewReaction" method="POST" class="flex-1">
+                            <input type="hidden" name="rid" value="{{ review['rid'] }}">
+                            <button type="submit" name="reaction" value="-1" class="w-full bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600 transition-colors">
+                                👎 Dislike 
+                            </button>
+                        </form>
+                    </div>
+                    <div class="ml-4 px-3 py-1 rounded-full {{ 'bg-green-100 text-green-800' if likes_dict.get(review['rid'], 0) > 0 else 'bg-red-100 text-red-800' if likes_dict.get(review['rid'], 0) < 0 else 'bg-gray-100 text-gray-800' }}">
+                        <span class="font-semibold">{{ likes_dict.get(review['rid'], 0) }} votes</span>
+                    </div>
                 </div>
+
                 <div class="flex items-center mt-2">
                     <div class="flex">
                         {% for i in range(review['rating']|int) %}
@@ -68,8 +82,10 @@
                     </div>
                     <span class="ml-2 text-sm text-gray-600">({{ review['rating'] }}/10)</span>
                 </div>
+                
                 <p class="text-sm text-gray-700 mt-2">{{ review['description'] }}</p>
                 <p class="text-sm text-gray-500 mt-2 italic">Review by User: {{ review['user_id'] }}</p>
+                
                 {% if is_admin %}
                 <form action="/highlightReview" method="POST" class="mt-2">
                     <input type="hidden" name="rid" value="{{ review['rid'] }}">
@@ -85,7 +101,6 @@
             <p class="text-gray-600 italic">No reviews yet. Be the first to write one!</p>
         {% endif %}
     </div>
-
 <footer class="bg-gray-100 mt-12 py-6">
     <div class="container mx-auto px-4 text-center text-gray-600 text-sm">
         <p>Hours and availability may vary during holidays and special events.</p>
