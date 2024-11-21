@@ -1,18 +1,13 @@
 # w4111-proj1
-
-The PostgreSQL account where your database on our server resides. (This should be the same database that you used for Part 2, but we need you to confirm that we should check that database.)
+# Leo Sun and Julia Ding
+# UNIs: lys2121, jld2251
 
 The URL of your web application. Once again, please do not turn off your virtual machine after you are done modifying your code and when you are ready to submit, so that your IP address does not change and the URL that you include with your project submission works.
 
-A description of the parts of your original proposal in Part 1 that you implemented, the parts you did not (which hopefully is nothing or something very small), and possibly new features that were not included in the proposal and that you implemented anyway. If you did not implement some part of the proposal in Part 1, explain why.
-
-
-Briefly describe two of the web pages that require (what you consider) the most interesting database operations in terms of what the pages are used for, how the page is related to the database operations (e.g., inputs on the page are used in such and such way to produce database operations that do such and such), and why you think they are interesting.
-A careful description of what AI tools you have used for the project, if any, and how, following strictly our project policies on usage of AI tools.
-
 PostgreSQL account: jld2251
 
-URL of web application: 
+URL of web application: **TODO**
+
 
 Continuity with Part 1:
 
@@ -23,11 +18,16 @@ Additionally, we do not have a sorting feature but as we worked we realized that
 
 We decided not to implement "clicking into" dining hall pages, as that defeats a primary purpose of the application which is to view dining halls conveniently on one page.
 
-Extra features we added include the many UI features, such as being able to save the user's inputted user_id to attach to reviews and being able to DELETE reviews from both the UI and from the database, which is a nice use of database knowledge. There are many examples of SELECT and INSERT queries used throughout the app. 
+Extra features we added include the many UI features, such as being able to save the user's inputted user_id to attach to reviews and being able to DELETE reviews from both the UI and from the database, which is a nice use of database knowledge. There are many examples of SELECT and INSERT queries used throughout the app. Another improvement we made on our original plan is the display of average rating for reviews of each dining hall, and we slightly altered the evaluates and discusses tables to contain the rating attribute so that ratings can be a part of reviews.
 
 Notes:
-The same item can be repeatedly reviewed. 
+A UNI must be inputted upon the running of the app before review deletion is allowed. 
+The same item can be repeatedly reviewed. This would of course become a problem on a larger scale but for now this helps to populate the database.
 
+Other possible improvements: 
+Filtering the Item Name dropdown by the dining hall name selected. 
+Making the front-end error checking (e.g. preventing certain actions before UNI is inserted) more seamless.
+Populating more dining hall item data with more accuracy (this would naturally be improved as the app persists long-term)
 
 
 The most interesting web pages are: 
@@ -42,11 +42,12 @@ The most interesting web pages are:
     - This feature also interacts with several different tables, such as the Menu_is_from, has_item, and contains. 
     - Displaying the average rating using an aggregate operator was particularly satisfying to accomplish, as it felt like a cohesive effort in connecting the dining hall info part of our application to the reviews part. It was cool to see how two different parts of our application could interact in such a natural manner.
 
-2. The Delete reviews page. First of all, 
-
-
-
-
+2. The Delete reviews page. 
+- First of all, the user navigates to this page with the button to select reviews for deletion -- this exists so that this page can be presented where only the user's reviews are present (assuming they have inserted their UNI). This provides not only a clear way to view one's own past reviews, but also to prevent the user from deleting any reviews other than their own. 
+    - When the Delete Review button is pressed on any given review, that review's associated data is removed from the evaluates, discusses, and posts_reviews tables. 
+    - We designed it so that the data for a review must be present in these three tables to display them, meaning that the review also disappears off the display instantly! We really enjoy this feature and think it is a great use of the database. With one click of a button, several tables are manipulated seamlessly.
+        - The menu_is_from table is not removed from; this is because the menu_is_from table is meant to contain menus from each mealtime for each dining hall, and should only become more and more populated. This table was not used much in this application, except that it is inserted into when reviews are posted to help with seamless population of its data. 
+    - The Back to Home button is also present on this page so the user can navigate back when done deleting or viewing reviews of their choice.
 
 AI Tools:
-ChatGPT and Claude were used for front-end and syntax purposes only. In particular, a significant amount of the styling of the app was done by AI. When our code logic was correct but there were some minor syntax issues that blocked our progression, we employed some AI usage as well. 
+ChatGPT and Claude were used for front-end and syntax purposes only. In particular, a significant amount of the styling and front-end organization of the app was done by AI. When our code logic was correct but there were some minor syntax issues that blocked our progression, we employed some AI usage as well. Queries were AI-free but some Googling was used.
