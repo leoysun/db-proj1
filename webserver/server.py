@@ -118,15 +118,26 @@ def showTables():
     dhalls = [dict(row) for row in cursor.mappings()]
     cursor.close()
 
+    avg_rating_dict = {}
     # Then, get items for each dining hall by station
     for dhall in dhalls:
+        avg_cursor = g.conn.execute(text(
+           """
+            SELECT AVG(e.rating)
+            FROM evaluates e
+            WHERE e.dhall_name=:dhall_name
+           """
+        ), {"dhall_name": dhall['dhall_name']})
+
+        avg_rating = avg_cursor.fetchone()[0]
+        avg_rating_dict[dhall['dhall_name']] = avg_rating
+
         # Fetch items for this specific dining hall, grouped by station
         items_cursor = g.conn.execute(text("""
             SELECT hi.dhall_name, hi.item_name, hi.dietary_info, hi.ingredients, hi.station, c.mealtime
             FROM contains c, has_item hi
             WHERE hi.dhall_name = c.dhall_name AND c.item_name = hi.item_name AND hi.dhall_name = :dhall_name
         """), {"dhall_name": dhall['dhall_name']})
-        #### ENSURE THIS QUERY WORKS
         
         # Group items by station
         stations = {}
@@ -148,7 +159,6 @@ def showTables():
         ]
         items_cursor.close()
 
-
     # Fetch reviews
     reviews_cursor = g.conn.execute(text("""
         SELECT pr.*, e.dhall_name, d.item_name, e.mealtime, e.rating
@@ -161,7 +171,7 @@ def showTables():
     context = {
         'data': dhalls
     }
-    return render_template("index.html", global_user_id=global_user_id, **context)
+    return render_template("index.html", global_user_id=global_user_id, avg_rating_dict=avg_rating_dict, **context)
 # @app.route('/')
 # def index():
 """
