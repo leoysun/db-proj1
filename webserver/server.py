@@ -407,10 +407,13 @@ def submitReview():
             """), {'rating': rating, 'rid': existing_rid, 'item_name': item_name})
             
             # Log the edit in the Edits table
-            g.conn.execute(text("""
-                INSERT INTO Edits (user_id, datetime, rid) 
-                VALUES (:user_id, :datetime, :rid)
-            """), {'user_id': user_id, 'datetime': current_time, 'rid': existing_rid})
+            try:
+                g.conn.execute(text("""
+                    INSERT INTO Edits (user_id, datetime, rid) 
+                    VALUES (:user_id, :datetime, :rid)
+                """), {'user_id': user_id, 'datetime': current_time, 'rid': existing_rid})
+            except Exception as e:
+                return(f"You are not an admin. You cannot edit.", 400)
             
             g.conn.commit()
             return redirect('/reviews')
@@ -534,6 +537,28 @@ def deleteSingleReview():
     #    """), {"rid": rid, "user_id": global_user_id}
     #)
     #g.conn.commit()
+
+    #delete from Likes
+    g.conn.execute(text("""
+        DELETE FROM Likes 
+        WHERE rid = :rid
+        """), {"rid": rid})
+    g.conn.commit()
+    #delete from edits
+    g.conn.execute(text("""
+        DELETE FROM Edits 
+        WHERE rid = :rid
+        """), {"rid": rid})
+    g.conn.commit()
+    #delete from Time
+    g.conn.execute(text("""
+        DELETE FROM Time
+        WHERE datetime IN (
+            SELECT datetime 
+            FROM posts_reviews 
+            WHERE rid = :rid)
+        """), {"rid": rid})
+    g.conn.commit()
 
     # delete from discusses
     g.conn.execute(text("""

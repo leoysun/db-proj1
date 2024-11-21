@@ -28,7 +28,7 @@ Other possible improvements:
 Filtering the Item Name dropdown by the dining hall name selected. 
 Making the front-end error checking (e.g. preventing certain actions before UNI is inserted) more seamless.
 Populating more dining hall item data with more accuracy (this would naturally be improved as the app persists long-term)
-
+Making a stricter difference between Admin and nonAdmin accounts (currently, admin reviews can be edited from any account)
 
 The most interesting web pages are: 
 1. The main page. 
