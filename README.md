@@ -49,5 +49,7 @@ The most interesting web pages are:
         - The menu_is_from table is not removed from; this is because the menu_is_from table is meant to contain menus from each mealtime for each dining hall, and should only become more and more populated. This table was not used much in this application, except that it is inserted into when reviews are posted to help with seamless population of its data. 
     - The Back to Home button is also present on this page so the user can navigate back when done deleting or viewing reviews of their choice.
 
+Note: we also think the like and dislike feature on the reviews page is also really cool!
+
 AI Tools:
 ChatGPT and Claude were used for front-end and syntax purposes only. In particular, a significant amount of the styling and front-end organization of the app was done by AI. When our code logic was correct but there were some minor syntax issues that blocked our progression, we employed some AI usage as well. Queries were AI-free but some Googling was used.

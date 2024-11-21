@@ -252,6 +252,19 @@ def showReviews():
   reviews = cursor.mappings().all()
   cursor.close()
 
+  admin_query = """
+    SELECT a.user_id
+    FROM admin a
+  """
+
+  is_admin = False
+
+  cursor = g.conn.execute(text(admin_query))
+  admin_ids = {row['user_id'] for row in cursor.mappings()}
+  cursor.close()
+
+  is_admin = global_user_id in admin_ids
+
   likes_query = """
   SELECT l.rid, SUM(l.goodbad) as net_likes
   FROM Likes l
@@ -275,15 +288,44 @@ def showReviews():
   context = dict(reviews=reviews, likes_dict=likes_dict)
   #merged_context = {**likes_dict, **context}
 
-  return render_template('reviews.html', global_user_id=global_user_id, **context)
+  return render_template('reviews.html', global_user_id=global_user_id, is_admin=is_admin, **context)
 
+@app.route('/highlightReview', methods=['POST'])
+def highlightReview():
+  global global_user_id
+  admin_query = """
+    SELECT a.user_id
+    FROM admin a
+  """
+
+  is_admin = False
+
+  cursor = g.conn.execute(text(admin_query))
+  admin_ids = {row['user_id'] for row in cursor.mappings()}
+  cursor.close()
+
+  is_admin = global_user_id in admin_ids
+
+  if not is_admin:
+     return "Unauthorized", 403
+  topic = request.form.get('topic')
+  rid = request.form.get('rid')
+
+  insert_query = """
+        INSERT INTO Highlights_Shoutouts (topic, scope, user_id, datetime, rid)
+        VALUES (:topic, 'Admins', :user_id, NOW(), :rid)
+    """
+  g.conn.execute(text(insert_query), {'topic': topic, 'user_id': global_user_id, 'rid': rid})
+  g.conn.commit()
+
+  return redirect('/reviews')
 
 @app.route('/submitUser', methods=['GET', 'POST'])
 def submitUser():
   global global_user_id
   user_id = request.form.get('user_id')
   if not user_id:
-    return "UNI cannot be blank", 400
+    return "UNI cannot be blank", 40
   global_user_id = user_id
 
   # boolean

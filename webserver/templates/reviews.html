@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Columbia Dining Halls</title>
+    <title>CU Spoon</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
 </head>
 <body class="bg-gray-50">
     <nav class="bg-blue-800 p-4 shadow-lg">
         <div class="container mx-auto flex justify-between items-center">
             <div>
-                <h1 class="text-white text-2xl font-bold">Columbia Dining Halls</h1>
+                <h1 class="text-white text-2xl font-bold">CU Spoon</h1>
                 <p class="text-blue-100 text-sm">Find your perfect dining spot on campus</p>
             </div>
             <div class="flex flex-col items-end justify-center">
@@ -70,6 +70,15 @@
                 </div>
                 <p class="text-sm text-gray-700 mt-2">{{ review['description'] }}</p>
                 <p class="text-sm text-gray-500 mt-2 italic">Review by User: {{ review['user_id'] }}</p>
+                {% if is_admin %}
+                <form action="/highlightReview" method="POST" class="mt-2">
+                    <input type="hidden" name="rid" value="{{ review['rid'] }}">
+                    <input type="text" name="topic" placeholder="Enter topic" class="border border-gray-300 px-2 py-1 rounded-md w-40" required>
+                    <button type="submit" class="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600 transition-colors">
+                        Highlight Review
+                    </button>
+                </form>
+                {% endif %}
             </div>
             {% endfor %}
         {% else %}
