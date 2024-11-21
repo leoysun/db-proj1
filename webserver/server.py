@@ -282,8 +282,6 @@ def submitUser():
     # Check if the user is an admin and password is incorrect
     if password == '' or password != admin_entry['password']:
         return "Wrong password", 400
-  else:
-    return "Not an admin", 400
   
   user_params = {
       'user_id': request.form['user_id'],
@@ -296,6 +294,25 @@ def submitUser():
       """), user_params)
   g.conn.commit()
   return redirect('/')
+
+@app.route('/reviewReaction', methods=['GET','POST'])
+def reviewReaction():
+  rid = request.form['rid']
+  reaction = request.form['reaction']
+  if not global_user_id:
+     return "Make sure you have submitted your UNI on the home page", 400 
+  likes_params = {
+     'user_id': global_user_id,
+     'rid': rid,
+     'goodbad': reaction
+  }
+  query = """
+    INSERT INTO Likes (user_id, rid, goodbad)
+    VALUES (:user_id, :rid, :goodbad)
+    ON CONFLICT (user_id, rid) DO UPDATE SET goodbad = EXCLUDED.goodbad"""
+  g.conn.execute(text(query), likes_params)
+  g.conn.commit()
+  return redirect('/reviews')
 
 @app.route('/deleteReviews', methods=['GET', 'POST'])
 def deleteReviews():

@@ -42,6 +42,20 @@
                     <h3 class="text-lg font-semibold text-gray-900">{{ review['dhall_name']}}{{' '}}{{review['mealtime']}}{{': '}}{{review['item_name']}}</h3>
                     <p class="text-sm text-gray-500">{{ review['datetime'].strftime("%B %d, %Y %H:%M") }}</p>
                 </div>
+                <div class="flex items-center space-x-2 mt-2">
+                    <form action="/reviewReaction" method="POST" class="flex-1">
+                        <input type="hidden" name="rid" value="{{ review['rid'] }}">
+                        <button type="submit" name="reaction" value="1" class="w-full bg-green-500 text-white px-2 py-1 rounded hover:bg-green-600 transition-colors">
+                            👍 Like
+                        </button>
+                    </form>
+                    <form action="/reviewReaction" method="POST" class="flex-1">
+                        <input type="hidden" name="rid" value="{{ review['rid'] }}">
+                        <button type="submit" name="reaction" value="-1" class="w-full bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600 transition-colors">
+                            👎 Dislike
+                        </button>
+                    </form>
+                </div>
                 <div class="flex items-center mt-2">
                     <div class="flex">
                         {% for i in range(review['rating']|int) %}
