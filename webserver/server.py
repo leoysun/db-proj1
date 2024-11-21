@@ -9,37 +9,25 @@ A debugger such as "pdb" may be helpful for debugging.
 Read about it online.
 """
 import os
-  # accessible as a variable in index.html:
+# accessible as a variable in index.html:
 from sqlalchemy import *
 from sqlalchemy.pool import NullPool
 from flask import Flask, request, render_template, g, redirect, Response, abort
+from datetime import datetime
+import uuid
 
 tmpl_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'templates')
 app = Flask(__name__, template_folder=tmpl_dir)
 
-
-#
-# The following is a dummy URI that does not connect to a valid database. You will need to modify it to connect to your Part 2 database in order to use the data.
-#
-# XXX: The URI should be in the format of:
-#
-#     postgresql://user:password@104.196.222.236/proj1part2
-#
-# For example, if you had username gravano and password foobar, then the following line would be:
-#
-#     DATABASEURI = "postgresql://gravano:foobar@104.196.222.236/proj1part2"
-#
 DATABASEURI = "postgresql://jld2251:juliaduckey@104.196.222.236/proj1part2"
+
+global_user_id = None # store user ID from the user ID input form in index.html
 
 #
 # This line creates a database engine that knows how to connect to the URI above.
 #
 engine = create_engine(DATABASEURI)
 
-#
-# Example of running queries in your database
-# Note that this will probably not work if you already have a table named 'test' in your database, containing meaningful data. This is only an example showing you how to run queries in your database using SQLAlchemy.
-#
 conn = engine.connect()
 
 # The string needs to be wrapped around text()
@@ -93,9 +81,75 @@ def teardown_request(exception):
 # see for routing: https://flask.palletsprojects.com/en/2.0.x/quickstart/?highlight=routing
 # see for decorators: http://simeonfranklin.com/blog/2012/jul/1/python-decorators-in-12-steps/
 #
+
 @app.route('/')
-def index():
-  """
+def showTables():
+    global global_user_id
+    # First, get the dining halls
+    cursor = g.conn.execute(text("""
+        SELECT DISTINCT dh.dhall_name, dh.address, dh.capacity, dh.hours
+        FROM dining_halls dh
+    """))
+    dhalls = [dict(row) for row in cursor.mappings()]
+    cursor.close()
+
+    avg_rating_dict = {}
+    # Then, get items for each dining hall by station
+    for dhall in dhalls:
+        avg_cursor = g.conn.execute(text(
+           """
+            SELECT AVG(e.rating)
+            FROM evaluates e
+            WHERE e.dhall_name=:dhall_name
+           """
+        ), {"dhall_name": dhall['dhall_name']})
+
+        avg_rating = avg_cursor.fetchone()[0]
+        avg_rating_dict[dhall['dhall_name']] = avg_rating
+
+        # Fetch items for this specific dining hall, grouped by station
+        items_cursor = g.conn.execute(text("""
+            SELECT hi.dhall_name, hi.item_name, hi.dietary_info, hi.ingredients, hi.station, c.mealtime
+            FROM contains c, has_item hi
+            WHERE hi.dhall_name = c.dhall_name AND c.item_name = hi.item_name AND hi.dhall_name = :dhall_name
+        """), {"dhall_name": dhall['dhall_name']})
+        
+        # Group items by station
+        stations = {}
+        for item in items_cursor.mappings():
+            if item['station'] not in stations:
+                stations[item['station']] = []
+            stations[item['station']].append({
+                'name': item['item_name'],
+                'dietary_info': item['dietary_info'] or 'No info',
+                'ingredients': item['ingredients'] or 'No info',
+                'mealtime': item['mealtime']
+            })
+        
+        dhall['stations'] = [
+            {
+                'station': station, 
+                'items': items
+            } for station, items in stations.items()
+        ]
+        items_cursor.close()
+
+    # Fetch reviews
+    reviews_cursor = g.conn.execute(text("""
+        SELECT pr.*, e.dhall_name, d.item_name, e.mealtime, e.rating
+        FROM discusses d, posts_reviews pr, evaluates e
+        WHERE d.rid = e.rid AND e.rid = pr.rid
+    """))
+    reviews = reviews_cursor.mappings().all()
+    reviews_cursor.close()
+
+    context = {
+        'data': dhalls
+    }
+    return render_template("index.html", global_user_id=global_user_id, avg_rating_dict=avg_rating_dict, **context)
+# @app.route('/')
+# def index():
+"""
   request is a special object that Flask provides to access web request information:
 
   request.method:   "GET" or "POST"
@@ -163,7 +217,7 @@ def index():
   # render_template looks in the templates/ folder for files.
   # for example, the below file reads template/index.html
   #
-  return render_template("index.html") #, **context)
+  # return render_template("index.html") #, **context)
 
 #
 # This is an example of a different path.  You can see it at:
@@ -173,40 +227,370 @@ def index():
 # Notice that the function name is another() rather than index()
 # The functions for each app.route need to have different names
 #
-@app.route('/another')
-def another():
-  return render_template("another.html")
+#@app.route('/another')
+#def another():
+#  return render_template("another.html")
 
-# Example of adding new data to the database
-@app.route('/add', methods=['POST'])
-def add(): 
-  rating = request.form['rating']
-  params_dict = {"rating":rating, "user_id":g.user_id, "dhall_name":g.dhall_name} # ADD FORMS TO ADJUST THE DHALLNAME AND USERID
-  g.conn.execute(text('INSERT INTO rates(rating, user_id, dhall_name) VALUES (:rating, :user_id, :dhall_name)'), params_dict)
-  g.conn.commit()
+@app.route('/dhall_name', methods=['POST'])
+def set_dhall_name():
+  g.dhall_name = request.form.get('dhall_name')  # Retrieve the value of 'dhall_name' from the form
+  print(g.dhall_name)
   return redirect('/')
 
-@app.route('/id', methods=['POST'])
-def set_userid():
-  g.user_id = request.form.get('user_id')  # Retrieve the value of 'user_id' from the form
-  return redirect('/')
+@app.route('/reviews')
+def showReviews():
 
-@app.route('/showDhalls')
-def showTables():
-  cursor = g.conn.execute(text("SELECT * FROM dining_halls"))
-  g.conn.commit()
-  dhalls = []
-  results = cursor.mappings().all() 
-  for result in results:
-    dhalls.append(result)
+  global global_user_id
+  query = """
+    SELECT pr.*, e.dhall_name, d.item_name, e.mealtime, e.rating
+    FROM discusses d, posts_reviews pr, evaluates e
+    WHERE d.rid = e.rid AND e.rid = pr.rid
+    """
   
+  cursor = g.conn.execute(text(query))
+  g.conn.commit()
+  reviews = cursor.mappings().all()
   cursor.close()
-  return render_template("dhalls.html", data=dhalls)
 
-@app.route('/login')
-def login():
-    abort(401)
-    this_is_never_executed()
+  likes_query = """
+  SELECT l.rid, SUM(l.goodbad) as net_likes
+  FROM Likes l
+  GROUP BY l.rid
+  """
+  likes_cursor = g.conn.execute(text(likes_query))
+  g.conn.commit()
+  net_likes_by_rid = likes_cursor.mappings().all()
+  likes_cursor.close()
+
+  likes_dict = {}
+  for result in net_likes_by_rid:
+     likes_dict[result['rid']] = result['net_likes']
+     
+  # Merge likes information into reviews -- This is flawed and difficult because rid must be matched for the two tables
+  # Thus, we just track net likes.
+  #for review in reviews:
+  #    review['likes_count'] = likes_dict['likes_count']
+  #    review['dislikes_count'] = likes_dict['dislikes_count']
+
+  context = dict(reviews=reviews, likes_dict=likes_dict)
+  #merged_context = {**likes_dict, **context}
+
+  return render_template('reviews.html', global_user_id=global_user_id, **context)
+
+
+@app.route('/submitUser', methods=['GET', 'POST'])
+def submitUser():
+  global global_user_id
+  user_id = request.form.get('user_id')
+  if not user_id:
+    return "UNI cannot be blank", 400
+  global_user_id = user_id
+
+  # boolean
+  is_admin = False
+  username = request.form.get('username')
+  password = request.form.get('password')
+
+  admin_cursor = g.conn.execute(text("""
+      SELECT user_id, password
+      FROM Admin
+      WHERE user_id = :user_id
+      """), {'user_id': user_id})
+  g.conn.commit()
+  admins = admin_cursor.mappings().all()
+  admin_cursor.close()
+
+  if admins:
+    admin_entry = admins[0]
+    
+    # Check if the user is an admin and password is incorrect
+    if password == '' or password != admin_entry['password']:
+        return "Wrong password", 400
+  
+  user_params = {
+      'user_id': request.form['user_id'],
+      'username': request.form['username'],
+    }
+  g.conn.execute(text("""
+      INSERT INTO Users (user_id, username)
+      VALUES (:user_id, :username)
+      ON CONFLICT (user_id) DO UPDATE SET username = EXCLUDED.username
+      """), user_params)
+  g.conn.commit()
+  return redirect('/')
+
+@app.route('/reviewReaction', methods=['GET','POST'])
+def reviewReaction():
+  rid = request.form['rid']
+  reaction = request.form['reaction']
+  if not global_user_id:
+     return "Make sure you have submitted your UNI on the home page", 400 
+  likes_params = {
+     'user_id': global_user_id,
+     'rid': rid,
+     'goodbad': reaction
+  }
+  query = """
+    INSERT INTO Likes (user_id, rid, goodbad)
+    VALUES (:user_id, :rid, :goodbad)
+    ON CONFLICT (user_id, rid) DO UPDATE SET goodbad = EXCLUDED.goodbad"""
+  g.conn.execute(text(query), likes_params)
+  g.conn.commit()
+  return redirect('/reviews')
+
+@app.route('/deleteReviews', methods=['GET', 'POST'])
+def deleteReviews():
+   # display the reviews eligible for deletion based on user ID
+   global global_user_id
+   if not global_user_id:
+      return "Make sure you have submitted your UNI on the home page", 400
+   query = """
+    SELECT pr.*, e.dhall_name, d.item_name, e.mealtime, e.rating
+    FROM discusses d, posts_reviews pr, evaluates e
+    WHERE d.rid = e.rid AND e.rid = pr.rid AND pr.user_id = :user_id
+    """
+   cursor = g.conn.execute(text(query), {'user_id': global_user_id})
+   g.conn.commit()
+   reviews = cursor.mappings().all()
+   cursor.close()
+   context = dict(reviews=reviews)
+   return render_template('deleteReviews.html', global_user_id=global_user_id, **context) 
+
+@app.route('/submitReview', methods=['GET', 'POST'])
+def submitReview():
+    user_id = request.form.get('user_id')  # Get user ID from form input
+    dhall_name = request.form.get('dhall_name')
+    rating = request.form.get('rating')
+    description = request.form.get('description')
+    item_name = request.form.get('item_name')
+
+    # Ensure user_id is not empty
+    if not user_id:
+        return "UNI is required to submit a review.", 400
+        
+    rid = str(uuid.uuid4())[:20]
+    current_time = datetime.now()
+
+    
+    # Insert the review and rating
+    try:
+        g.conn.execute(text("""
+            INSERT INTO Time (datetime) 
+            VALUES (:datetime)
+            ON CONFLICT DO NOTHING
+        """), {'datetime': current_time})
+        
+        existing_review = g.conn.execute(text("""
+            SELECT rid FROM Discusses 
+            WHERE item_name = :item_name AND dhall_name = :dhall_name AND rid IN (
+                  SELECT rid FROM Posts_Reviews 
+                  WHERE user_id = :user_id
+              )
+        """), {'item_name': item_name, 'dhall_name': dhall_name, 'user_id': user_id}).fetchone()
+
+        if existing_review:
+            existing_rid = existing_review[0]
+            print(existing_rid)
+            g.conn.execute(text("""
+                UPDATE Posts_Reviews 
+                SET description = :description, datetime = :datetime 
+                WHERE rid = :rid
+            """), {'description': description, 'datetime': current_time, 'rid': existing_rid})
+            
+            g.conn.execute(text("""
+                UPDATE evaluates 
+                SET rating = :rating 
+                WHERE rid = :rid
+            """), {'rating': rating, 'rid': existing_rid})
+            
+            g.conn.execute(text("""
+                UPDATE Discusses 
+                SET rating = :rating 
+                WHERE rid = :rid AND item_name = :item_name
+            """), {'rating': rating, 'rid': existing_rid, 'item_name': item_name})
+            
+            # Log the edit in the Edits table
+            try:
+                g.conn.execute(text("""
+                    INSERT INTO Edits (user_id, datetime, rid) 
+                    VALUES (:user_id, :datetime, :rid)
+                """), {'user_id': user_id, 'datetime': current_time, 'rid': existing_rid})
+            except Exception as e:
+                return(f"You are not an admin. You cannot edit.", 400)
+            
+            g.conn.commit()
+            return redirect('/reviews')
+        
+        # Insert into Menu_is_from
+        menu_is_from_params = {
+            'dhall_name': request.form['dhall_name'],
+            'mealtime': request.form['mealtime'],
+            'date': current_time.date()
+        }
+        g.conn.execute(text("""
+            INSERT INTO Menu_is_from (dhall_name, mealtime, date)
+            VALUES (:dhall_name, :mealtime, :date)
+            ON CONFLICT (dhall_name, mealtime) DO UPDATE SET date = EXCLUDED.date
+        """), menu_is_from_params)
+        g.conn.commit()
+
+        # Insert into Posts_Reviews
+        review_params = {
+            'user_id': request.form['user_id'],
+            'datetime': current_time,
+            'rid': rid,
+            'description': request.form['description'],
+        }
+        g.conn.execute(text("""
+            INSERT INTO Posts_Reviews (user_id, datetime, rid, description)
+            VALUES (:user_id, :datetime, :rid, :description) 
+        """), review_params)
+        g.conn.commit()
+        
+        # Insert into evaluates
+        evaluates_params = {
+            'dhall_name': request.form['dhall_name'],
+            'mealtime': request.form['mealtime'],
+            'rid': rid,
+            'rating': request.form['rating']
+        }
+        g.conn.execute(text("""
+            INSERT INTO evaluates (dhall_name, mealtime, rid, rating)
+            VALUES (:dhall_name, :mealtime, :rid, :rating)
+        """), evaluates_params)
+        g.conn.commit()
+        
+        # Insert into Discusses
+        discusses_params = {
+            'rid': rid,
+            'item_name': request.form['item_name'],
+            'dhall_name': request.form['dhall_name'],
+            'rating': request.form['rating']
+        }
+        g.conn.execute(text("""
+            INSERT INTO Discusses (rid, item_name, dhall_name, rating)
+            VALUES (:rid, :item_name, :dhall_name, :rating)
+        """), discusses_params)
+        g.conn.commit()
+
+        # Insert into Judges
+        #judges_params = {
+        #    'rating': request.form['rating'],
+        #    'user_id': request.form['user_id'],
+        #    'dhall_name': request.form['dhall_name'],
+        #    'mealtime': request.form['mealtime'],
+        #}
+        #g.conn.execute(text("""
+        #    INSERT INTO Judges (rating, user_id, dhall_name, mealtime)
+        #    VALUES (:rating, :user_id, :dhall_name, :mealtime)
+        #"""), judges_params)
+        #g.conn.commit()
+
+        # Insert into rates
+        #rating_params = {
+        #    'user_id': request.form['user_id'],
+        #    'dhall_name': request.form['dhall_name'],
+        #    'rating': request.form['rating']
+        #}
+        #g.conn.execute(text("""
+        #    INSERT INTO rates (rating, user_id, dhall_name)
+        #    VALUES (:rating, :user_id, :dhall_name)
+        #    ON CONFLICT (user_id, dhall_name) 
+        #   DO UPDATE SET rating = EXCLUDED.rating
+        #"""), rating_params)
+        #g.conn.commit()
+
+        return redirect('/reviews')
+        
+    except Exception as e:
+        print(f"Error submitting review: {e}")
+        g.conn.rollback()
+        return f"Error submitting review: {e}", 500
+
+@app.route('/deleteSingleReview', methods=['POST'])
+def deleteSingleReview():
+  global global_user_id
+  if not global_user_id:
+      return "Something went wrong with signing in, please input your UNI on the homepage again", 400
+   
+  rid = request.form.get('rid')
+  print(f"Received rid: {rid}")
+  if not rid:
+    return "Error with selecting review", 400
+  
+  try:
+    # delete from rates
+    #g.conn.execute(text("""
+    #    DELETE FROM rates
+    #    WHERE rid IN (
+    #     SELECT rid 
+    #        FROM posts_reviews 
+    #        WHERE rid = :rid AND user_id = :user_id )
+    #    """), {"rid": rid, "user_id": global_user_id}
+    #)
+    #g.conn.commit()
+
+    # delete from judges
+    #g.conn.execute(text("""
+    #    DELETE FROM judges
+    #    WHERE rid IN (
+    #      SELECT rid 
+    #        FROM evaluates 
+    #        WHERE rid = :rid AND user_id = :user_id )
+    #    """), {"rid": rid, "user_id": global_user_id}
+    #)
+    #g.conn.commit()
+
+    #delete from Likes
+    g.conn.execute(text("""
+        DELETE FROM Likes 
+        WHERE rid = :rid
+        """), {"rid": rid})
+    g.conn.commit()
+    #delete from edits
+    g.conn.execute(text("""
+        DELETE FROM Edits 
+        WHERE rid = :rid
+        """), {"rid": rid})
+    g.conn.commit()
+    #delete from Time
+    g.conn.execute(text("""
+        DELETE FROM Time
+        WHERE datetime IN (
+            SELECT datetime 
+            FROM posts_reviews 
+            WHERE rid = :rid)
+        """), {"rid": rid})
+    g.conn.commit()
+
+    # delete from discusses
+    g.conn.execute(text("""
+        DELETE FROM discusses 
+        WHERE rid = :rid;
+        """), {"rid": rid})
+    g.conn.commit()
+    
+    # delete from evaluates
+    g.conn.execute(text("""
+        DELETE FROM evaluates 
+        WHERE rid = :rid;
+        """), {"rid": rid})
+    g.conn.commit()
+
+    # delete from posts_reviews
+    g.conn.execute(text("""
+        DELETE FROM Posts_Reviews 
+        WHERE rid = :rid AND user_id = :user_id;
+        """), {"rid": rid, "user_id": global_user_id})
+    g.conn.commit()
+
+    return redirect('/deleteReviews')
+
+  except Exception as e:
+        g.conn.rollback()
+        print(f"Error deleting review: {e}")
+        return f"Error deleting review: {e}", 500
+
 
 if __name__ == "__main__":
   import click
@@ -235,4 +619,3 @@ if __name__ == "__main__":
 
     
   app.run(debug=True)
-

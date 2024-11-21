@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Columbia Dining Halls</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-50">
+    <nav class="bg-blue-800 p-4 shadow-lg">
+        <div class="container mx-auto flex justify-between items-center">
+            <div>
+                <h1 class="text-white text-2xl font-bold">Columbia Dining Halls</h1>
+                <p class="text-blue-100 text-sm">Find your perfect dining spot on campus</p>
+            </div>
+            <div class="flex flex-col items-end justify-center">
+                <a href="/" class="text-white hover:text-blue-200 font-medium mb-2">Back to Home</a>
+    
+                <div class="text-sm text-blue-100">
+                    {% if global_user_id %}
+                        <p>You are logged in as <strong>{{ global_user_id }}</strong></p>
+                    {% else %}
+                        <p>You are not logged in.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Reviews Display Section -->
+    <div class="bg-white rounded-lg shadow-md p-6 mt-6">
+        <h2 class="text-xl font-bold text-gray-900 mb-4">Recent Reviews</h2>
+        <div class="flex justify-between items-center mb-4">
+            <a href="/deleteReviews" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition-colors">
+                Select Reviews for Deletion
+            </a>
+        </div>
+        {% if reviews %}
+            {% for review in reviews %}
+            <div class="mb-6 border-b pb-4 last:border-b-0">
+                <div class="flex justify-between items-center">
+                    <h3 class="text-lg font-semibold text-gray-900">{{ review['dhall_name']}}{{' '}}{{review['mealtime']}}{{': '}}{{review['item_name']}}</h3>
+                    <p class="text-sm text-gray-500">{{ review['datetime'].strftime("%B %d, %Y %H:%M") }}</p>
+                </div>
+                <div class="flex items-center space-x-2 mt-2">
+                    <form action="/reviewReaction" method="POST" class="flex-1">
+                        <input type="hidden" name="rid" value="{{ review['rid'] }}">
+                        <button type="submit" name="reaction" value="1" class="w-full bg-green-500 text-white px-2 py-1 rounded hover:bg-green-600 transition-colors">
+                            👍 Like
+                        </button>
+                    </form>
+                    <form action="/reviewReaction" method="POST" class="flex-1">
+                        <input type="hidden" name="rid" value="{{ review['rid'] }}">
+                        <button type="submit" name="reaction" value="-1" class="w-full bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600 transition-colors">
+                            👎 Dislike 
+                        </button>
+                    </form>
+                    Net likes: {{ likes_dict.get(review['rid'], 0) }}
+
+                </div>
+                <div class="flex items-center mt-2">
+                    <div class="flex">
+                        {% for i in range(review['rating']|int) %}
+                            <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                            </svg>
+                        {% endfor %}
+                    </div>
+                    <span class="ml-2 text-sm text-gray-600">({{ review['rating'] }}/10)</span>
+                </div>
+                <p class="text-sm text-gray-700 mt-2">{{ review['description'] }}</p>
+                <p class="text-sm text-gray-500 mt-2 italic">Review by User: {{ review['user_id'] }}</p>
+            </div>
+            {% endfor %}
+        {% else %}
+            <p class="text-gray-600 italic">No reviews yet. Be the first to write one!</p>
+        {% endif %}
+    </div>
+
+<footer class="bg-gray-100 mt-12 py-6">
+    <div class="container mx-auto px-4 text-center text-gray-600 text-sm">
+        <p>Hours and availability may vary during holidays and special events.</p>
+        <p class="mt-2">For the most up-to-date information, please check the Columbia Dining website.</p>
+    </div>
+</footer>
+</body>
+</html>

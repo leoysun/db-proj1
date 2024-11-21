@@ -1,75 +1,257 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CU Spoon</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-50">
+    <nav class="bg-blue-800 p-4 shadow-lg">
+        <div class="container mx-auto flex justify-between items-center">
+            <div>
+                <h1 class="text-white text-2xl font-bold">CU Spoon</h1>
+                <p class="text-blue-100 text-sm">Find your perfect dining spot on campus</p>
+            </div>
+            <div class="text-sm text-blue-100 p-4">
+                {% if global_user_id %}
+                    <p >You are logged in as <strong>{{ global_user_id }}</strong></p>
+                {% else %}
+                    <p>You are not logged in.</p>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
 
-  <style>
-    body{ 
-      font-size: 15pt;
-      font-family: arial;
-    }
-  </style>
+    <main class="container mx-auto p-4 mt-8">
+        <div class="space-y-6">
+            {% for dhall in data %}
+            <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <!-- Name and Basic Info Section -->
+                    <div class="md:col-span-1 bg-gray-50 p-6">
+                        <h2 class="text-xl font-bold text-gray-900 mb-2">{{ dhall['dhall_name'] }}</h2>
+                        <div class="space-y-3">
+                            <div>
+                                <p class="text-sm font-medium text-gray-600">Hours</p>
+                                <p class="text-sm text-gray-800 whitespace-pre-line">{{ dhall['hours'] }}</p>
+                            </div>
+                            <div>
+                                <p class="text-sm font-medium text-gray-600">Location</p>
+                                <p class="text-sm text-gray-800">{{ dhall['address'] }}</p>
+                            </div>
+                            <div>
+                                <p class="text-sm font-medium text-gray-600">Capacity</p>
+                                <p class="text-sm text-gray-800">
+                                    {% if dhall['capacity'] > 0 %}
+                                        {{ dhall['capacity'] }} percent
+                                    {% else %}
+                                        Capacity not specified
+                                    {% endif %}
+                                </p>
+                            </div>
+                            <div class="flex items-center space-x-2 text-sm text-gray-700">
+                                <span class="font-medium">Average Rating:</span>
+                                <span class="bg-blue-100 px-2 py-1 rounded-full">
+                                    {{ (avg_rating_dict.get(dhall['dhall_name'], 0) or 0)|round(2) }} / 10
+                                </span>
+                            </div>
+                        </div>
+                    </div>
 
-  <head>
-    <title>DineDB</title>
-    <link rel="stylesheet" type="text/css" href="../../static/styles.css">
-  </head>
+                    <!-- Stations Section -->
+                    <div class="md:col-span-3 p-6">
+                        <div class="mb-4">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-3">Available Stations</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                {% for station in dhall['stations'] %}
+                                <div class="bg-gray-50 rounded p-3">
+                                    <h4 class="font-bold text-gray-900">{{ station['station'] }}</h4>
+                                    <ul>
+                                        {% for item in station['items'] %}
+                                            <li>{{ item['name'] }} ({{ item['dietary_info'] }})</li>
+                                            <p class="italic text-sm">{{ item['mealtime'] }}</p>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                                {% endfor %}
+                            </div> 
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
 
-  <body>
-    <h1>Welcome to our website!</h1>
-    <h1>Some famous Computer Scientists</h1>
-    <div>{{data}}</div>
-
-    <form id="nameForm" action="/name" method="POST">
-      <label for ="fname">Name:</label>
-      <input type="text" id="fname" name="fname">
-      <button class="submitButton" type="submit" value="Submit">Submit</button>
-
-    </form>
-
-    <form id="idForm" action="/id" method="POST">
-      <label for="user_id">Enter a User ID:</label>
-      <input type="text" id="user_id" name="user_id">
-      <button class="submitButton" type="submit" value="Submit">Submit</button>
-    </form>
-
-    <form id="dhallForm" method="POST" action="/dhall_name">
-      <label for="dhall_name">Enter a Dining Hall Name:</label>
-      <input type="text" id="dhall_name" name="dhall_name">
-      <button class="submitButton" type="submit" value="Submit">Submit</button>
-    </form>
-
-    <form id="ratingForm" action="/add" method="POST">
-      <label for="rating">Rating for this dining hall: </label>
-      <input type="text" id="rating" name="rating"> 
-      <button class="submitButton" type="submit" value="Submit">Submit</button>
-    </form>
-
-    
-
-
-    <script>
-      const form = document.getElementById("nameForm").onsubmit = function() {
-      form.addEventListener('submit', function(event) {
-        event.preventDefault();
-        const name = document.getElementById("fname").value;
-        console.log(`Thank you, ${name.trim()}!`);
-      })
-      }
-    
-    </script>
-
-    <div>
-      {% for n in data %}
-      <div>{{n}}</div>
-      {% endfor %}
+<!-- User ID Input Description -->
+<div class="bg-white rounded-lg shadow p-6">
+    <div class="flex justify-between items-center mb-4">
+        <h2 class="text-xl font-bold">Input User ID</h2>
     </div>
+    <p>Use this form to log in (for deleting your past reviews) or update your username.</p>
+    <!-- Fixed the form to exactly match the server expectations -->
+    <form action="/submitUser" method="POST" class="space-y-4">
+        <!-- User ID field -->
+        <div>
+            <label for="user_id" class="block text-gray-700 mb-2">Your UNI</label>
+            <input 
+                type="text" 
+                id="user_id" 
+                name="user_id" 
+                class="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
+                required
+            >
+            <label for="username" class="block text-gray-700 mb-2">Your Username</label>
+            <input 
+                type="text" 
+                id="username" 
+                name="username" 
+                class="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
+                required
+            >
+            <label for="password" class="block text-gray-700 mb-2 mt-4">Password (for Admins)</label>
+            <input 
+                type="text" 
+                id="password" 
+                value=''
+                name="password" 
+                class="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            >
+            </label>
+        </div>
+        
+        <!-- Submit Button -->
+        <button 
+            type="submit" 
+            class="w-full bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+        >
+            Submit ID into Users
+        </button>
+    </form>
+</div>
 
-    <p><a href="another">Go to the other page</a></p>
+<!-- Review Form Section -->
+<div class="bg-white rounded-lg shadow p-6">
+    <div class="flex justify-between items-center mb-4">
+        <h2 class="text-xl font-bold">Write a Review</h2>
+        <a href="/reviews" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition-colors">
+            See All Reviews
+        </a>
+    </div>
+    <!-- Fixed the form to exactly match the server expectations -->
+    <form action="/submitReview" method="POST" class="space-y-4">
+        <!-- User ID field -->
+        <div>
+            <label for="user_id" class="block text-gray-700 mb-2">Your UNI</label>
+            <input 
+                type="text" 
+                id="user_id" 
+                name="user_id" 
+                class="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
+                required
+            >
+        </div>
+        
+        <!-- Dining Hall Selection -->
+        <div>
+            <label for="dhall_name" class="block text-gray-700 mb-2">Dining Hall</label>
+            <select 
+                id="dhall_name" 
+                name="dhall_name" 
+                class="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
+                required
+            >
+                {% for dhall in data %}
+                    <option value="{{ dhall['dhall_name'] }}">{{ dhall['dhall_name'] }}</option>
+                {% endfor %}
+            </select>
+        </div>
 
-    <p><a href="showDhalls">Show Dining Halls</a></p>
+        <!-- Mealtime Selection-->
+        <div>
+            <label for="mealtime" class="block text-gray-700 mb-2">Mealtime</label>
+            <select 
+                id="mealtime" 
+                name="mealtime" 
+                class="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
+                required
+            >
+                <option value="Breakfast">Breakfast</option>
+                <option value="Lunch">Lunch</option>
+                <option value="Dinner">Dinner</option>
+            </select>
+        </div>
 
-    
+        <div>
+          <label for="item_name" class="block text-gray-700 mb-2">Item Name</label>
+          <select
+              id="item_name" 
+              name="item_name" 
+              class="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
+              required
+          >
+              {% for dhall in data %}
+                  {% for station in dhall['stations'] %}
+                      {% for item in station['items'] %}
+                          <option value="{{ item['name'] }}">
+                              {{ dhall['dhall_name'] }} - {{ item['name'] }}
+                          </option>
+                      {% endfor %}
+                  {% endfor %}
+              {% endfor %}
+          </select>
+        </div>
+        
+        <!-- Rating Selection -->
+        <div>
+            <label for="rating" class="block text-gray-700 mb-2">Rating</label>
+            <select 
+                id="rating" 
+                name="rating" 
+                class="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
+                required
+            >
+                <option value="10">10 - Excellent</option>
+                <option value="9">9</option>
+                <option value="8">8</option>
+                <option value="7">7</option>
+                <option value="6">6</option>
+                <option value="5">5</option>
+                <option value="4">4</option>
+                <option value="3">3</option>
+                <option value="2">2</option>
+                <option value="1">1 - Poor</option>
+            </select>
+        </div>
+        
+        <!-- Review Description -->
+        <div>
+            <label for="description" class="block text-gray-700 mb-2">Review</label>
+            <textarea 
+                id="description" 
+                name="description" 
+                rows="4" 
+                class="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
+                maxlength="300" 
+                required
+            ></textarea>
+            <p class="text-sm text-gray-500 mt-1">Maximum 300 characters</p>
+        </div>
+        
+        <!-- Submit Button -->
+        <button 
+            type="submit" 
+            class="w-full bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+        >
+            Submit Review
+        </button>
+    </form>
+</div>
 
-  </body>
-
-
+    <footer class="bg-gray-100 mt-12 py-6">
+        <div class="container mx-auto px-4 text-center text-gray-600 text-sm">
+            <p>Hours and availability may vary during holidays and special events.</p>
+            <p class="mt-2">For the most up-to-date information, please check the Columbia Dining website.</p>
+        </div>
+    </footer>
+</body>
 </html>
