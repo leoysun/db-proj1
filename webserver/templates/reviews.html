@@ -13,7 +13,17 @@
                 <h1 class="text-white text-2xl font-bold">Columbia Dining Halls</h1>
                 <p class="text-blue-100 text-sm">Find your perfect dining spot on campus</p>
             </div>
-            <a href="/" class="text-white hover:text-blue-200 font-medium">Back to Home</a>
+            <div class="flex flex-col items-end justify-center">
+                <a href="/" class="text-white hover:text-blue-200 font-medium mb-2">Back to Home</a>
+    
+                <div class="text-sm text-blue-100">
+                    {% if global_user_id %}
+                        <p>You are logged in as <strong>{{ global_user_id }}</strong></p>
+                    {% else %}
+                        <p>You are not logged in.</p>
+                    {% endif %}
+                </div>
+            </div>
         </div>
     </nav>
 

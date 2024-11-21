@@ -109,6 +109,7 @@ def showTables():
   """
 @app.route('/')
 def showTables():
+    global global_user_id
     # First, get the dining halls
     cursor = g.conn.execute(text("""
         SELECT DISTINCT dh.dhall_name, dh.address, dh.capacity, dh.hours
@@ -160,7 +161,7 @@ def showTables():
     context = {
         'data': dhalls
     }
-    return render_template("index.html", **context)
+    return render_template("index.html", global_user_id=global_user_id, **context)
 # @app.route('/')
 # def index():
 """
@@ -301,6 +302,8 @@ def showReviews():
   #cursor.close()
     
   # Get SOME reviews with dining hall info
+
+  global global_user_id
   query = """
     SELECT pr.*, e.dhall_name, d.item_name, e.mealtime, j.rating
     FROM discusses d, posts_reviews pr, evaluates e, judges j
@@ -312,14 +315,17 @@ def showReviews():
   reviews = cursor.mappings().all()
   cursor.close()
   context = dict(reviews=reviews)
-  return render_template('reviews.html', **context)
+  return render_template('reviews.html', global_user_id=global_user_id, **context)
 
 @app.route('/submitUser', methods=['GET', 'POST'])
 def submitUser():
   global global_user_id
-  global_user_id = request.form['user_id']
-  if not global_user_id:
+  user_id = request.form.get('user_id')
+  if not user_id:
     return "User ID cannot be blank", 400
+  global_user_id = user_id
+
+  username = request.form.get('username')
    
   user_params = {
       'user_id': request.form['user_id'],
@@ -349,7 +355,7 @@ def deleteReviews():
    reviews = cursor.mappings().all()
    cursor.close()
    context = dict(reviews=reviews)
-   return render_template('deleteReviews.html', **context) 
+   return render_template('deleteReviews.html', global_user_id=global_user_id, **context) 
 
 @app.route('/submitReview', methods=['GET', 'POST'])
 def submitReview():

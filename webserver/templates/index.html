@@ -13,7 +13,13 @@
                 <h1 class="text-white text-2xl font-bold">Columbia Dining Halls</h1>
                 <p class="text-blue-100 text-sm">Find your perfect dining spot on campus</p>
             </div>
-            <a href="/" class="text-white hover:text-blue-200 font-medium">Back to Home</a>
+            <div class="text-sm text-blue-100 p-4">
+                {% if global_user_id %}
+                    <p >You are logged in as <strong>{{ global_user_id }}</strong></p>
+                {% else %}
+                    <p>You are not logged in.</p>
+                {% endif %}
+            </div>
         </div>
     </nav>
 
@@ -290,6 +296,7 @@
     <div class="flex justify-between items-center mb-4">
         <h2 class="text-xl font-bold">Input User ID</h2>
     </div>
+    <p>Use this form to log in (for deleting your past reviews) or update your username.</p>
     <!-- Fixed the form to exactly match the server expectations -->
     <form action="/submitUser" method="POST" class="space-y-4">
         <!-- User ID field -->
