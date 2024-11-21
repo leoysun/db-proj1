@@ -262,8 +262,29 @@ def submitUser():
     return "UNI cannot be blank", 400
   global_user_id = user_id
 
+  # boolean
+  is_admin = False
   username = request.form.get('username')
-   
+  password = request.form.get('password')
+
+  admin_cursor = g.conn.execute(text("""
+      SELECT user_id, password
+      FROM Admin
+      WHERE user_id = :user_id
+      """), {'user_id': user_id})
+  g.conn.commit()
+  admins = admin_cursor.mappings().all()
+  admin_cursor.close()
+
+  if admins:
+    admin_entry = admins[0]
+    
+    # Check if the user is an admin and password is incorrect
+    if password == '' or password != admin_entry['password']:
+        return "Wrong password", 400
+  else:
+    return "Not an admin", 400
+  
   user_params = {
       'user_id': request.form['user_id'],
       'username': request.form['username'],
