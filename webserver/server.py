@@ -367,9 +367,54 @@ def submitReview():
         
     rid = str(uuid.uuid4())[:20]
     current_time = datetime.now()
+
     
     # Insert the review and rating
     try:
+        g.conn.execute(text("""
+            INSERT INTO Time (datetime) 
+            VALUES (:datetime)
+            ON CONFLICT DO NOTHING
+        """), {'datetime': current_time})
+        
+        existing_review = g.conn.execute(text("""
+            SELECT rid FROM Discusses 
+            WHERE item_name = :item_name AND dhall_name = :dhall_name AND rid IN (
+                  SELECT rid FROM Posts_Reviews 
+                  WHERE user_id = :user_id
+              )
+        """), {'item_name': item_name, 'dhall_name': dhall_name, 'user_id': user_id}).fetchone()
+
+        if existing_review:
+            existing_rid = existing_review[0]
+            print(existing_rid)
+            g.conn.execute(text("""
+                UPDATE Posts_Reviews 
+                SET description = :description, datetime = :datetime 
+                WHERE rid = :rid
+            """), {'description': description, 'datetime': current_time, 'rid': existing_rid})
+            
+            g.conn.execute(text("""
+                UPDATE evaluates 
+                SET rating = :rating 
+                WHERE rid = :rid
+            """), {'rating': rating, 'rid': existing_rid})
+            
+            g.conn.execute(text("""
+                UPDATE Discusses 
+                SET rating = :rating 
+                WHERE rid = :rid AND item_name = :item_name
+            """), {'rating': rating, 'rid': existing_rid, 'item_name': item_name})
+            
+            # Log the edit in the Edits table
+            g.conn.execute(text("""
+                INSERT INTO Edits (user_id, datetime, rid) 
+                VALUES (:user_id, :datetime, :rid)
+            """), {'user_id': user_id, 'datetime': current_time, 'rid': existing_rid})
+            
+            g.conn.commit()
+            return redirect('/reviews')
+        
         # Insert into Menu_is_from
         menu_is_from_params = {
             'dhall_name': request.form['dhall_name'],
