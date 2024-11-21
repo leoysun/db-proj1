@@ -28,10 +28,6 @@ global_user_id = None # store user ID from the user ID input form in index.html
 #
 engine = create_engine(DATABASEURI)
 
-#
-# Example of running queries in your database
-# Note that this will probably not work if you already have a table named 'test' in your database, containing meaningful data. This is only an example showing you how to run queries in your database using SQLAlchemy.
-#
 conn = engine.connect()
 
 # The string needs to be wrapped around text()
@@ -85,28 +81,7 @@ def teardown_request(exception):
 # see for routing: https://flask.palletsprojects.com/en/2.0.x/quickstart/?highlight=routing
 # see for decorators: http://simeonfranklin.com/blog/2012/jul/1/python-decorators-in-12-steps/
 #
-# @app.route('/')
-"""
-def showTables():
-  cursor = g.conn.execute(text("""
-                               # SELECT dh.dhall_name, dh.address, dh.capacity, dh.hours, hi.item_name, hi.dietary_info, hi.ingredients
-                               # FROM dining_halls dh INNER JOIN has_item hi
-                               # ON dh.dhall_name = hi.dhall_name
-                               # """))
-  #### Access in dhalls.html using dhalls['item_name'], dhalls['dietary_info'], dhalls['ingredients'], etc. Maybe use AI for frontend fitting info in
-  #### NOTE: above query is still flawed as it doesn't include the dates and mealtime that the items are presented during. 
-  #### This is in the table "Menu_is_from" I believe. But that requires another join which we can figure out later if we want.
-"""
-  g.conn.commit()
-  dhalls = []
-  results = cursor.mappings().all()
-  for result in results:
-    dhalls.append(result)
-  cursor.close()
 
-  context = dict(data=dhalls)
-  return render_template("index.html", **context)
-  """
 @app.route('/')
 def showTables():
     global global_user_id
@@ -252,33 +227,9 @@ def showTables():
 # Notice that the function name is another() rather than index()
 # The functions for each app.route need to have different names
 #
-@app.route('/another')
-def another():
-  return render_template("another.html")
-
-# Example of adding new data to the database
-@app.route('/add', methods=['ADD','POST'])
-def add(): 
-  rating = request.form['rating']
-  params_dict = {"rating":rating, "user_id":g.user_id, "dhall_name":g.dhall_name} # ADD FORMS TO ADJUST THE DHALLNAME AND USERID
-  g.conn.execute(text("""INSERT INTO rates(rating, user_id, dhall_name) 
-                      VALUES (:rating, :user_id, :dhall_name)
-                      ON CONFLICT (user_id, dhall_name) DO UPDATE SET rating = EXCLUDED.rating")"""), params_dict)
-  g.conn.commit()
-
-  return redirect('/')
-
-@app.route('/id', methods=['POST'])
-def set_userid():
-  try:
-    g.user_id = request.form.get('user_id')  # Retrieve the value of 'user_id' from the form
-    g.conn.execute(text('INSERT INTO users(user_id) VALUES (:user_id)'), {'user_id': g.user_id})
-    g.conn.commit()
-  except Exception as e:
-    
-    redirect('/')
-    Response("Your User ID is already in use.") # NOTE: THIS IS NOT WORKING. BUT IT'S OKAY FOR NOW
-  return redirect('/')
+#@app.route('/another')
+#def another():
+#  return render_template("another.html")
 
 @app.route('/dhall_name', methods=['POST'])
 def set_dhall_name():
@@ -286,32 +237,8 @@ def set_dhall_name():
   print(g.dhall_name)
   return redirect('/')
 
-@app.route('/rate', methods=['POST'])
-def set_rating():
-  g.rating = request.form.get('rating')  # Retrieve the value of 'rating' from the form
-  print(g.rating)
-  return redirect('/add')
-
-#currently in progress
-#@app.route('/search')
-#def search():
-#  g.search = request.form.get('search') # MAKE THIS MORE IN DEPTH. WANT TO SEARCH FOR WHATEVER THE SEARCH FORM GIVES. FROM ALL DHALL INFO.
-#  cursor = g.conn.execute(text("SELECT"))
-#  return render_template("search.html, ")
-
-#TODO: get all food info on dhall page
 @app.route('/reviews')
 def showReviews():
-  #cursor = g.conn.execute(text("""
-  #  SELECT dhall_name 
-  #  FROM dining_halls dh, evaluates e
-  #  WHERE dh.dhall_name = e.dhall_name
-  #  """))
-  #g.conn.commit()
-  #dhalls = [row[0] for row in cursor]
-  #cursor.close()
-    
-  # Get SOME reviews with dining hall info
 
   global global_user_id
   query = """
@@ -332,7 +259,7 @@ def submitUser():
   global global_user_id
   user_id = request.form.get('user_id')
   if not user_id:
-    return "User ID cannot be blank", 400
+    return "UNI cannot be blank", 400
   global_user_id = user_id
 
   username = request.form.get('username')
@@ -354,7 +281,7 @@ def deleteReviews():
    # display the reviews eligible for deletion based on user ID
    global global_user_id
    if not global_user_id:
-      return "Make sure you have submitted your user ID on the home page", 400
+      return "Make sure you have submitted your UNI on the home page", 400
    query = """
     SELECT pr.*, e.dhall_name, d.item_name, e.mealtime, e.rating
     FROM discusses d, posts_reviews pr, evaluates e
@@ -377,7 +304,7 @@ def submitReview():
 
     # Ensure user_id is not empty
     if not user_id:
-        return "User ID is required to submit a review.", 400
+        return "UNI is required to submit a review.", 400
         
     rid = str(uuid.uuid4())[:20]
     current_time = datetime.now()
@@ -474,7 +401,7 @@ def submitReview():
 def deleteSingleReview():
   global global_user_id
   if not global_user_id:
-      return "Something went wrong with signing in, please input your user ID on the homepage again", 400
+      return "Something went wrong with signing in, please input your UNI on the homepage again", 400
    
   rid = request.form.get('rid')
   print(f"Received rid: {rid}")
@@ -533,11 +460,6 @@ def deleteSingleReview():
         return f"Error deleting review: {e}", 500
 
 
-@app.route('/login')
-def login():
-    abort(401)
-    this_is_never_executed()
-
 if __name__ == "__main__":
   import click
 
@@ -565,4 +487,3 @@ if __name__ == "__main__":
 
     
   app.run(debug=True)
-
