@@ -398,11 +398,12 @@ def submitReview():
         evaluates_params = {
             'dhall_name': request.form['dhall_name'],
             'mealtime': request.form['mealtime'],
-            'rid': rid
+            'rid': rid,
+            'rating': request.form['rating']
         }
         g.conn.execute(text("""
-            INSERT INTO evaluates (dhall_name, mealtime, rid)
-            VALUES (:dhall_name, :mealtime, :rid)
+            INSERT INTO evaluates (dhall_name, mealtime, rid, rating)
+            VALUES (:dhall_name, :mealtime, :rid, :rating)
         """), evaluates_params)
         g.conn.commit()
         
@@ -411,39 +412,40 @@ def submitReview():
             'rid': rid,
             'item_name': request.form['item_name'],
             'dhall_name': request.form['dhall_name'],
+            'rating': request.form['rating']
         }
         g.conn.execute(text("""
-            INSERT INTO Discusses (rid, item_name, dhall_name)
-            VALUES (:rid, :item_name, :dhall_name)
+            INSERT INTO Discusses (rid, item_name, dhall_name, rating)
+            VALUES (:rid, :item_name, :dhall_name, :rating)
         """), discusses_params)
         g.conn.commit()
 
         # Insert into Judges
-        judges_params = {
-            'rating': request.form['rating'],
-            'user_id': request.form['user_id'],
-            'dhall_name': request.form['dhall_name'],
-            'mealtime': request.form['mealtime'],
-        }
-        g.conn.execute(text("""
-            INSERT INTO Judges (rating, user_id, dhall_name, mealtime)
-            VALUES (:rating, :user_id, :dhall_name, :mealtime)
-        """), judges_params)
-        g.conn.commit()
+        #judges_params = {
+        #    'rating': request.form['rating'],
+        #    'user_id': request.form['user_id'],
+        #    'dhall_name': request.form['dhall_name'],
+        #    'mealtime': request.form['mealtime'],
+        #}
+        #g.conn.execute(text("""
+        #    INSERT INTO Judges (rating, user_id, dhall_name, mealtime)
+        #    VALUES (:rating, :user_id, :dhall_name, :mealtime)
+        #"""), judges_params)
+        #g.conn.commit()
 
         # Insert into rates
-        rating_params = {
-            'user_id': request.form['user_id'],
-            'dhall_name': request.form['dhall_name'],
-            'rating': request.form['rating']
-        }
-        g.conn.execute(text("""
-            INSERT INTO rates (rating, user_id, dhall_name)
-            VALUES (:rating, :user_id, :dhall_name)
-            ON CONFLICT (user_id, dhall_name) 
-            DO UPDATE SET rating = EXCLUDED.rating
-        """), rating_params)
-        g.conn.commit()
+        #rating_params = {
+        #    'user_id': request.form['user_id'],
+        #    'dhall_name': request.form['dhall_name'],
+        #    'rating': request.form['rating']
+        #}
+        #g.conn.execute(text("""
+        #    INSERT INTO rates (rating, user_id, dhall_name)
+        #    VALUES (:rating, :user_id, :dhall_name)
+        #    ON CONFLICT (user_id, dhall_name) 
+        #   DO UPDATE SET rating = EXCLUDED.rating
+        #"""), rating_params)
+        #g.conn.commit()
 
         return redirect('/reviews')
         
@@ -465,26 +467,26 @@ def deleteSingleReview():
   
   try:
     # delete from rates
-    g.conn.execute(text("""
-        DELETE FROM rates
-        WHERE rid IN (
-          SELECT rid 
-            FROM posts_reviews 
-            WHERE rid = :rid AND user_id = :user_id )
-        """), {"rid": rid, "user_id": global_user_id}
-    )
-    g.conn.commit()
+    #g.conn.execute(text("""
+    #    DELETE FROM rates
+    #    WHERE rid IN (
+    #     SELECT rid 
+    #        FROM posts_reviews 
+    #        WHERE rid = :rid AND user_id = :user_id )
+    #    """), {"rid": rid, "user_id": global_user_id}
+    #)
+    #g.conn.commit()
 
     # delete from judges
-    g.conn.execute(text("""
-        DELETE FROM rates
-        WHERE rid IN (
-          SELECT rid 
-            FROM evaluates 
-            WHERE rid = :rid AND user_id = :user_id )
-        """), {"rid": rid, "user_id": global_user_id}
-    )
-    g.conn.commit()
+    #g.conn.execute(text("""
+    #    DELETE FROM judges
+    #    WHERE rid IN (
+    #      SELECT rid 
+    #        FROM evaluates 
+    #        WHERE rid = :rid AND user_id = :user_id )
+    #    """), {"rid": rid, "user_id": global_user_id}
+    #)
+    #g.conn.commit()
 
     # delete from discusses
     g.conn.execute(text("""
