@@ -243,6 +243,17 @@
                                                     </ul>
                                                 </div>
                                             {% endif %}
+                                            {% if station['station'] == "Sandwich Station" %}
+                                                <div class="bg-gray-50 rounded p-3">
+                                                    <h4 class="font-bold text-gray-900">Sandwich Station</h4>
+                                                    <ul>
+                                                        {% for item in station['items'] %}
+                                                        <li>{{ item['name'] }} ({{ item['dietary_info'] }})</li>
+                                                        <h4 class="italic">{{ item['mealtime'] }}</h4>
+                                                        {% endfor %}
+                                                    </ul>
+                                                </div>
+                                            {% endif %}
                                         {% endif %}
 
                                         {% if dhall['dhall_name'] == "Faculty House" %}
@@ -274,20 +285,6 @@
                                         {% endif %}
                                     {% endfor %}
                                 </div>
-                        </div>
-
-                        <!-- Status and Additional Info -->
-                        <div class="flex items-center justify-between mt-4">
-                            <div class="flex items-center space-x-2">
-                                <span class="inline-block w-2 h-2 rounded-full bg-green-500"></span>
-                                <span class="text-sm text-gray-600">
-                                    {% if "Closed" in dhall['hours'] %}
-                                        Currently Closed
-                                    {% else %}
-                                        Open Now
-                                    {% endif %}
-                                </span>
-                            </div>
                         </div>
                     </div>
                 </div>
