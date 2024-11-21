@@ -24,8 +24,12 @@ We decided not to implement "clicking into" dining hall pages, as that defeats a
 Extra features we added include the many UI features, such as being able to save the user's inputted user_id to attach to reviews and being able to DELETE reviews from both the UI and from the database, which is a nice use of database knowledge. There are many examples of SELECT and INSERT queries used throughout the app. 
 
 Notes:
-
 The same item can be repeatedly reviewed. 
+
+
+The most interesting web pages are: 
+1. The main page. 
+2. The Delete reviews page. First of all,
 
 
 
