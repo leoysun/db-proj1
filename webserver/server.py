@@ -151,9 +151,9 @@ def showTables():
 
     # Fetch reviews
     reviews_cursor = g.conn.execute(text("""
-        SELECT pr.*, e.dhall_name, d.item_name, e.mealtime, j.rating
-        FROM discusses d, posts_reviews pr, evaluates e, judges j
-        WHERE d.rid = e.rid AND e.rid = pr.rid AND (j.user_id = pr.user_id AND j.dhall_name = e.dhall_name AND j.mealtime = e.mealtime)
+        SELECT pr.*, e.dhall_name, d.item_name, e.mealtime, e.rating
+        FROM discusses d, posts_reviews pr, evaluates e
+        WHERE d.rid = e.rid AND e.rid = pr.rid
     """))
     reviews = reviews_cursor.mappings().all()
     reviews_cursor.close()
@@ -305,9 +305,9 @@ def showReviews():
 
   global global_user_id
   query = """
-    SELECT pr.*, e.dhall_name, d.item_name, e.mealtime, j.rating
-    FROM discusses d, posts_reviews pr, evaluates e, judges j
-    WHERE d.rid = e.rid AND e.rid = pr.rid AND (j.user_id = pr.user_id AND j.dhall_name = e.dhall_name AND j.mealtime = e.mealtime)
+    SELECT pr.*, e.dhall_name, d.item_name, e.mealtime, e.rating
+    FROM discusses d, posts_reviews pr, evaluates e
+    WHERE d.rid = e.rid AND e.rid = pr.rid
     """
   
   cursor = g.conn.execute(text(query))
@@ -346,9 +346,9 @@ def deleteReviews():
    if not global_user_id:
       return "Make sure you have submitted your user ID on the home page", 400
    query = """
-    SELECT pr.*, e.dhall_name, d.item_name, e.mealtime, j.rating
-    FROM discusses d, posts_reviews pr, evaluates e, judges j
-    WHERE d.rid = e.rid AND e.rid = pr.rid AND (j.user_id = pr.user_id AND j.dhall_name = e.dhall_name AND j.mealtime = e.mealtime) AND pr.user_id = :user_id
+    SELECT pr.*, e.dhall_name, d.item_name, e.mealtime, e.rating
+    FROM discusses d, posts_reviews pr, evaluates e
+    WHERE d.rid = e.rid AND e.rid = pr.rid AND pr.user_id = :user_id
     """
    cursor = g.conn.execute(text(query), {'user_id': global_user_id})
    g.conn.commit()
