@@ -21,6 +21,8 @@ app = Flask(__name__, template_folder=tmpl_dir)
 
 DATABASEURI = "postgresql://jld2251:juliaduckey@104.196.222.236/proj1part2"
 
+global_user_id = None # store user ID from the user ID input form in index.html
+
 #
 # This line creates a database engine that knows how to connect to the URI above.
 #
@@ -314,8 +316,9 @@ def showReviews():
 
 @app.route('/submitUser', methods=['GET', 'POST'])
 def submitUser():
-  user_id = request.form.get('user_id')
-  if not user_id:
+  global global_user_id
+  global_user_id = request.form['user_id']
+  if not global_user_id:
     return "User ID cannot be blank", 400
    
   user_params = {
@@ -325,10 +328,28 @@ def submitUser():
   g.conn.execute(text("""
       INSERT INTO Users (user_id, username)
       VALUES (:user_id, :username)
+      ON CONFLICT (user_id) DO UPDATE SET username = EXCLUDED.username
       """), user_params)
   g.conn.commit()
   return redirect('/')
-  
+
+@app.route('/deleteReviews', methods=['GET', 'POST'])
+def deleteReviews():
+   # display the reviews eligible for deletion based on user ID
+   global global_user_id
+   if not global_user_id:
+      return "Make sure you have submitted your user ID on the home page", 400
+   query = """
+    SELECT pr.*, e.dhall_name, d.item_name, e.mealtime, j.rating
+    FROM discusses d, posts_reviews pr, evaluates e, judges j
+    WHERE d.rid = e.rid AND e.rid = pr.rid AND (j.user_id = pr.user_id AND j.dhall_name = e.dhall_name AND j.mealtime = e.mealtime) AND pr.user_id = :user_id
+    """
+   cursor = g.conn.execute(text(query), {'user_id': global_user_id})
+   g.conn.commit()
+   reviews = cursor.mappings().all()
+   cursor.close()
+   context = dict(reviews=reviews)
+   return render_template('deleteReviews.html', **context) 
 
 @app.route('/submitReview', methods=['GET', 'POST'])
 def submitReview():
@@ -371,6 +392,7 @@ def submitReview():
             INSERT INTO Posts_Reviews (user_id, datetime, rid, description)
             VALUES (:user_id, :datetime, :rid, :description) 
         """), review_params)
+        g.conn.commit()
         
         # Insert into evaluates
         evaluates_params = {
@@ -421,6 +443,7 @@ def submitReview():
             ON CONFLICT (user_id, dhall_name) 
             DO UPDATE SET rating = EXCLUDED.rating
         """), rating_params)
+        g.conn.commit()
 
         return redirect('/reviews')
         
@@ -428,6 +451,69 @@ def submitReview():
         print(f"Error submitting review: {e}")
         g.conn.rollback()
         return f"Error submitting review: {e}", 500
+
+@app.route('/deleteSingleReview', methods=['POST'])
+def deleteSingleReview():
+  global global_user_id
+  if not global_user_id:
+      return "Something went wrong with signing in, please input your user ID on the homepage again", 400
+   
+  rid = request.form.get('rid')
+  print(f"Received rid: {rid}")
+  if not rid:
+    return "Error with selecting review", 400
+  
+  try:
+    # delete from rates
+    g.conn.execute(text("""
+        DELETE FROM rates
+        WHERE rid IN (
+          SELECT rid 
+            FROM posts_reviews 
+            WHERE rid = :rid AND user_id = :user_id )
+        """), {"rid": rid, "user_id": global_user_id}
+    )
+    g.conn.commit()
+
+    # delete from judges
+    g.conn.execute(text("""
+        DELETE FROM rates
+        WHERE rid IN (
+          SELECT rid 
+            FROM evaluates 
+            WHERE rid = :rid AND user_id = :user_id )
+        """), {"rid": rid, "user_id": global_user_id}
+    )
+    g.conn.commit()
+
+    # delete from discusses
+    g.conn.execute(text("""
+        DELETE FROM discusses 
+        WHERE rid = :rid;
+        """), {"rid": rid})
+    g.conn.commit()
+    
+    # delete from evaluates
+    g.conn.execute(text("""
+        DELETE FROM evaluates 
+        WHERE rid = :rid;
+        """), {"rid": rid})
+    g.conn.commit()
+
+    # delete from posts_reviews
+    g.conn.execute(text("""
+        DELETE FROM Posts_Reviews 
+        WHERE rid = :rid AND user_id = :user_id;
+        """), {"rid": rid, "user_id": global_user_id})
+    g.conn.commit()
+
+    return redirect('/deleteReviews')
+
+  except Exception as e:
+        g.conn.rollback()
+        print(f"Error deleting review: {e}")
+        return f"Error deleting review: {e}", 500
+
 
 @app.route('/login')
 def login():

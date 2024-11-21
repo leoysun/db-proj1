@@ -17,14 +17,9 @@
         </div>
     </nav>
 
-    <!-- Reviews Display Section -->
+    <!-- Delete Reviews Display Section -->
     <div class="bg-white rounded-lg shadow-md p-6 mt-6">
-        <h2 class="text-xl font-bold text-gray-900 mb-4">Recent Reviews</h2>
-        <div class="flex justify-between items-center mb-4">
-            <a href="/deleteReviews" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition-colors">
-                Select Reviews for Deletion
-            </a>
-        </div>
+        <h2 class="text-xl font-bold text-gray-900 mb-4">Your Reviews</h2>
         {% if reviews %}
             {% for review in reviews %}
             <div class="mb-6 border-b pb-4 last:border-b-0">
@@ -32,6 +27,14 @@
                     <h3 class="text-lg font-semibold text-gray-900">{{ review['dhall_name']}}{{' '}}{{review['mealtime']}}{{': '}}{{review['item_name']}}</h3>
                     <p class="text-sm text-gray-500">{{ review['datetime'].strftime("%B %d, %Y %H:%M") }}</p>
                 </div>
+                <div class="flex items-center mt-2">
+                    <form action="/deleteSingleReview" method="POST" class="space-y-4">
+                        <input type="hidden" name="rid" value="{{ review['rid'] }}">
+                        <button type="submit" class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 transition-colors">
+                            Delete Review
+                        </button>
+                    </form>
+                </div>  
                 <div class="flex items-center mt-2">
                     <div class="flex">
                         {% for i in range(review['rating']|int) %}
@@ -43,7 +46,9 @@
                     <span class="ml-2 text-sm text-gray-600">({{ review['rating'] }}/10)</span>
                 </div>
                 <p class="text-sm text-gray-700 mt-2">{{ review['description'] }}</p>
+                
                 <p class="text-sm text-gray-500 mt-2 italic">Review by User ID: {{ review['user_id'] }}</p>
+                
             </div>
             {% endfor %}
         {% else %}
