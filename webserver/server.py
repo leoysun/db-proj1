@@ -289,8 +289,11 @@ def showReviews():
   SELECT hs.topic, hs.rid, hs.user_id
   FROM Highlights_shoutouts hs
   """
-  shoutouts_cursor = g.conn.execute(text(shoutouts_query))
-  g.conn.commit()
+  try:
+    shoutouts_cursor = g.conn.execute(text(shoutouts_query))
+    g.conn.commit()
+  except: 
+    return "Error with getting shoutouts", 400
   shoutouts = shoutouts_cursor.mappings().all()
   shoutouts_cursor.close()
 
@@ -325,8 +328,11 @@ def highlightReview():
         VALUES (:topic, 'All', :user_id, NOW(), :rid)
         ON CONFLICT (user_id, rid) DO UPDATE SET topic = EXCLUDED.topic, datetime = EXCLUDED.datetime
     """
-  g.conn.execute(text(insert_query), {'topic': topic, 'user_id': global_user_id, 'rid': rid})
-  g.conn.commit()
+  try:
+    g.conn.execute(text(insert_query), {'topic': topic, 'user_id': global_user_id, 'rid': rid})
+    g.conn.commit()
+  except Exception as e:
+     return f"Topic too long. Error: {e}", 400
 
   return redirect('/reviews')
 
@@ -382,12 +388,15 @@ def reviewReaction():
      'rid': rid,
      'goodbad': reaction
   }
-  query = """
-    INSERT INTO Likes (user_id, rid, goodbad)
-    VALUES (:user_id, :rid, :goodbad)
-    ON CONFLICT (user_id, rid) DO UPDATE SET goodbad = EXCLUDED.goodbad"""
-  g.conn.execute(text(query), likes_params)
-  g.conn.commit()
+  try:
+    query = """
+      INSERT INTO Likes (user_id, rid, goodbad)
+      VALUES (:user_id, :rid, :goodbad)
+      ON CONFLICT (user_id, rid) DO UPDATE SET goodbad = EXCLUDED.goodbad"""
+    g.conn.execute(text(query), likes_params)
+    g.conn.commit()
+  except Exception as e:
+     return f"Error: {e}", 400
   return redirect('/reviews')
 
 @app.route('/deleteReviews', methods=['GET', 'POST'])
@@ -396,13 +405,17 @@ def deleteReviews():
    global global_user_id
    if not global_user_id:
       return "Make sure you have submitted your UNI on the home page", 400
-   query = """
-    SELECT pr.*, e.dhall_name, d.item_name, e.mealtime, e.rating
-    FROM discusses d, posts_reviews pr, evaluates e
-    WHERE d.rid = e.rid AND e.rid = pr.rid AND pr.user_id = :user_id
-    """
-   cursor = g.conn.execute(text(query), {'user_id': global_user_id})
-   g.conn.commit()
+   
+   try:
+    query = """
+      SELECT pr.*, e.dhall_name, d.item_name, e.mealtime, e.rating
+      FROM discusses d, posts_reviews pr, evaluates e
+      WHERE d.rid = e.rid AND e.rid = pr.rid AND pr.user_id = :user_id
+      """
+    cursor = g.conn.execute(text(query), {'user_id': global_user_id})
+    g.conn.commit()
+   except Exception as e:
+      return f"Error: {e}", 400
    reviews = cursor.mappings().all()
    cursor.close()
    context = dict(reviews=reviews)
