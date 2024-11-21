@@ -251,8 +251,29 @@ def showReviews():
   g.conn.commit()
   reviews = cursor.mappings().all()
   cursor.close()
+
+  likes_query = """
+  SELECT l.rid, SUM(l.goodbad) as net_likes
+  FROM Likes l
+  GROUP BY l.rid
+  """
+  likes_cursor = g.conn.execute(text(likes_query))
+  g.conn.commit()
+  net_likes_by_rid = likes_cursor.mappings().all()
+  likes_cursor.close()
+
+  likes_dict = {}
+  for result in net_likes_by_rid:
+     likes_dict[result['rid']] = result['net_likes']
+     
+  # Merge likes information into reviews -- This is flawed and difficult because rid must be matched for the two tables
+  # Thus, we just track net likes.
+  #for review in reviews:
+  #    review['likes_count'] = likes_dict['likes_count']
+  #    review['dislikes_count'] = likes_dict['dislikes_count']
+
   context = dict(reviews=reviews)
-  return render_template('reviews.html', global_user_id=global_user_id, **context)
+  return render_template('reviews.html', global_user_id=global_user_id, **likes_dict, **context)
 
 @app.route('/submitUser', methods=['GET', 'POST'])
 def submitUser():
