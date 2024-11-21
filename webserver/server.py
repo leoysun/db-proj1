@@ -272,8 +272,11 @@ def showReviews():
   #    review['likes_count'] = likes_dict['likes_count']
   #    review['dislikes_count'] = likes_dict['dislikes_count']
 
-  context = dict(reviews=reviews)
-  return render_template('reviews.html', global_user_id=global_user_id, **likes_dict, **context)
+  context = dict(reviews=reviews, likes_dict=likes_dict)
+  #merged_context = {**likes_dict, **context}
+
+  return render_template('reviews.html', global_user_id=global_user_id, **context)
+
 
 @app.route('/submitUser', methods=['GET', 'POST'])
 def submitUser():

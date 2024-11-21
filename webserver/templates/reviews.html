@@ -52,9 +52,11 @@
                     <form action="/reviewReaction" method="POST" class="flex-1">
                         <input type="hidden" name="rid" value="{{ review['rid'] }}">
                         <button type="submit" name="reaction" value="-1" class="w-full bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600 transition-colors">
-                            👎 Dislike
+                            👎 Dislike 
                         </button>
                     </form>
+                    Net likes: {{ likes_dict.get(review['rid'], 0) }}
+
                 </div>
                 <div class="flex items-center mt-2">
                     <div class="flex">
