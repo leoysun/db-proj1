@@ -438,13 +438,7 @@ def submitReview():
 
     
     # Insert the review and rating
-    try:
-        g.conn.execute(text("""
-            INSERT INTO Time (datetime) 
-            VALUES (:datetime)
-            ON CONFLICT DO NOTHING
-        """), {'datetime': current_time})
-        
+    try:      
         existing_review = g.conn.execute(text("""
             SELECT rid FROM Discusses 
             WHERE item_name = :item_name AND dhall_name = :dhall_name AND rid IN (
@@ -455,7 +449,12 @@ def submitReview():
 
         if existing_review:
             existing_rid = existing_review[0]
-            print(existing_rid)
+            g.conn.execute(text("""
+                INSERT INTO Time (datetime) 
+                VALUES (:datetime)
+                ON CONFLICT DO NOTHING
+            """), {'datetime': current_time})
+
             g.conn.execute(text("""
                 UPDATE Posts_Reviews 
                 SET description = :description, datetime = :datetime 
@@ -497,7 +496,7 @@ def submitReview():
             VALUES (:dhall_name, :mealtime, :date)
             ON CONFLICT (dhall_name, mealtime) DO UPDATE SET date = EXCLUDED.date
         """), menu_is_from_params)
-        g.conn.commit()
+        # g.conn.commit()
 
         # Insert into Posts_Reviews
         review_params = {
@@ -510,7 +509,7 @@ def submitReview():
             INSERT INTO Posts_Reviews (user_id, datetime, rid, description)
             VALUES (:user_id, :datetime, :rid, :description) 
         """), review_params)
-        g.conn.commit()
+        # g.conn.commit()
         
         # Insert into evaluates
         evaluates_params = {
@@ -523,7 +522,7 @@ def submitReview():
             INSERT INTO evaluates (dhall_name, mealtime, rid, rating)
             VALUES (:dhall_name, :mealtime, :rid, :rating)
         """), evaluates_params)
-        g.conn.commit()
+        # g.conn.commit()
         
         # Insert into Discusses
         discusses_params = {
@@ -536,7 +535,8 @@ def submitReview():
             INSERT INTO Discusses (rid, item_name, dhall_name, rating)
             VALUES (:rid, :item_name, :dhall_name, :rating)
         """), discusses_params)
-        g.conn.commit()
+        
+        g.conn.commit() # commit all inserts
 
         # Insert into Judges
         #judges_params = {
@@ -683,4 +683,4 @@ if __name__ == "__main__":
     app.run(host=HOST, port=PORT, debug=debug, threaded=threaded)
 
     
-  app.run(debug=True)
+  run()
